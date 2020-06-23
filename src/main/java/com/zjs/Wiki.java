@@ -35,11 +35,12 @@ class Wiki extends PluginBase {
         loadData();
         Util.generateHelpImage();
         listener=getEventListener().subscribeAlways(GroupMessageEvent.class, groupMessageEvent -> {
-            if(!looper.queue.isEmpty())
-                Util.sendMes(groupMessageEvent,"你的请求正在排队。前方有"+looper.queue.size()+"个请求。\r\n" +
-                        "为什么要排队?因为作者没(鸽)有(了)做多线程优化，同时处理多个请求可能会出错。");
-            if(groupMessageEvent.getMessage().contentToString().startsWith("Wiki:"))
+            if(groupMessageEvent.getMessage().contentToString().startsWith("Wiki:")) {
+                if(!looper.queue.isEmpty())
+                    Util.sendMes(groupMessageEvent,"你的请求正在排队。前方有"+looper.queue.size()+"个请求。\r\n" +
+                            "为什么要排队?因为作者没(鸽)有(了)做多线程优化，同时处理多个请求可能会出错。");
                 looper.post(groupMessageEvent);
+            }
             String content=Util.extractPlainText(groupMessageEvent);
             if(!Util.whiteList.contains(groupMessageEvent.getSender().getId())){
                 provider.cancelAllMatching(groupMessageEvent.getGroup().getId());
@@ -117,8 +118,8 @@ class Wiki extends PluginBase {
         @Override
         public void run() {
             while(!stop){
-                if(queue.isEmpty()){
-                    synchronized (lock){
+                synchronized (lock){
+                    if(queue.isEmpty()){
                         try {
                             lock.wait();
                         }catch (Exception e){

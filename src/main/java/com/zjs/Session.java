@@ -359,7 +359,7 @@ public class Session {
             s.queryData=Util.search(query,event.getGroup().getId());
             if(s.queryData.size()<=0){
                 Util.sendMes(event,"没有搜索到相关结果。请尝试换一个关键词或者发起提问。\r\n本群总计问题数:"+
-                        (Util.questions.containsKey(event.getGroup().getId())?Util.questions.get(event.getGroup().getId()):0));
+                        (Util.questions.containsKey(event.getGroup().getId())?Util.questions.get(event.getGroup().getId()).size():0));
                 return null;
             }
             Image i=event.getGroup().uploadImage(Util.generateSearchResultImage(s.queryData,0,query,event.getSenderName()));
