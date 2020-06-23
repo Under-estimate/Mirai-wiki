@@ -5,6 +5,9 @@ Mirai Core 版本 `1.0.2`
 ## 使用方法
 将插件放入plugins文件夹内即可使用。
 
+> 关于Linux运行环境
+> 如果你正在使用Linux而不是Windows来运行Mirai,请确保Microsoft YaHei字体(msyh.ttc)已安装到你的系统中，否则汉字可能不会被正常显示。
+
 ## 命令列表
 ### 任何情况下都能够使用的指令
 Wiki:Search + <关键词> 搜索有关问题  
