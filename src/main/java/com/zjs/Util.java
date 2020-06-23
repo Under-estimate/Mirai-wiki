@@ -8,7 +8,6 @@ import net.mamoe.mirai.message.data.PlainText;
 import net.mamoe.mirai.message.data.SingleMessage;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -26,7 +25,6 @@ public class Util {
     public static BufferedImage helpImage;
     public static int questionIdPointer;
     public static ArrayList<Long> whiteList;
-    public static boolean isWindows;
     public static final String help_1=
             "任何情况下都能够使用的指令\n\n" +
             "Wiki:Search + <关键词> 搜索有关问题\n" +
@@ -138,12 +136,10 @@ public class Util {
         g.setColor(new Color(0,0,0,100));
         g.fillRect(0,0,700,height);
         g.setColor(Color.white);
-        if(isWindows)
-            g.setFont(new Font("Microsoft YaHei",Font.PLAIN,30));
+        g.setFont(new Font("Microsoft YaHei",Font.PLAIN,30));
         g.drawString(title,10,30);
         g.setColor(Color.lightGray);
-        if(isWindows)
-            g.setFont(new Font("Microsoft YaHei",Font.PLAIN,20));
+        g.setFont(new Font("Microsoft YaHei",Font.PLAIN,20));
         g.drawString(subtitle1,10,60);
         g.drawString(subtitle2,10,80);
         g.setColor(Color.white);
@@ -175,8 +171,7 @@ public class Util {
         g.drawString("回复\"Wiki:View <序号>\"来查看详细信息。",10,height-250);
         g.drawString("回复\"Wiki:Help\"获取使用帮助",10,height-200);
         g.setColor(Color.lightGray);
-        if(isWindows)
-            g.setFont(new Font("Microsoft YaHei",Font.PLAIN,15));
+        g.setFont(new Font("Microsoft YaHei",Font.PLAIN,15));
         g.drawString("Wiki v0.1.0 UI",10,height-100);
         g.drawString("Developer e-mail: 1260717118@qq.com",10,height-70);
         g.drawString("~ Resolution for FAQs ~",10,height-50);
@@ -206,11 +201,9 @@ public class Util {
         g.setColor(new Color(0,0,0,100));
         g.fillRect(0,0,width,height);
         g.setColor(Color.cyan);
-        if(isWindows)
-            g.setFont(new Font("Microsoft YaHei",Font.PLAIN,30));
+        g.setFont(new Font("Microsoft YaHei",Font.PLAIN,30));
         g.drawString("Wiki Help Page",10,30);
-        if(isWindows)
-            g.setFont(new Font("Microsoft YaHei",Font.PLAIN,20));
+        g.setFont(new Font("Microsoft YaHei",Font.PLAIN,20));
         StringTokenizer st=new StringTokenizer(help_1,"\n",false);
         g.setColor(Color.white);
         int y=60;

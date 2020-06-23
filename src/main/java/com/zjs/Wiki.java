@@ -95,10 +95,12 @@ class Wiki extends PluginBase {
         try {
             Process process = Runtime.getRuntime().exec("dir");
             process.waitFor();
-            Util.isWindows = process.exitValue() != -1;
+            if(process.exitValue()==-1)getLogger().warning("Detected non-Windows runtime. Please install font \"Microsoft YaHei\" so that Chinese characters are rendered properly.");
         } catch (Exception e) {
-            Util.isWindows = false;
+            getLogger().warning("Detected non-Windows runtime. Please install font \"Microsoft YaHei\" so that Chinese characters are rendered properly.");
         }
+        if(!System.getProperty("os.name").toLowerCase().contains("win"))
+            getLogger().warning("Detected non-Windows runtime. Please install font \"Microsoft YaHei\" so that Chinese characters are rendered properly.");
     }
     @Override
     public void onDisable(){
