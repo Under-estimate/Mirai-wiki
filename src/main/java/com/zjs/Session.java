@@ -42,14 +42,14 @@ public class Session {
      * */
     public boolean parseAction(@NotNull GroupMessageEvent event){
         String content=event.getMessage().contentToString();
-        if(content.startsWith("Wiki:Page")){
+        if(content.toLowerCase().startsWith("wiki:page")){
             if(state==State.Write_Answer||state==State.Write_Question){
                 Util.sendMes(event,"不可以在当前上下文中使用该指令！");
                 return true;
             }
             int page;
             try{
-                page=Integer.parseInt(content.split("Wiki:Page")[1].trim());
+                page=Integer.parseInt(content.split("((?i)wiki:page)",2)[1].trim());
             }catch (Exception e){
                 Util.sendMes(event,"参数错误。\r\n命令用法 Wiki:Page + <页码>");
                 return true;
@@ -86,14 +86,14 @@ public class Session {
             }
             return true;
         }
-        else if(content.startsWith("Wiki:View")){
+        else if(content.toLowerCase().startsWith("wiki:view")){
             if(state==State.Write_Answer||state==State.Write_Question){
                 Util.sendMes(event,"不可以在当前上下文中使用该指令！");
                 return true;
             }
             int number;
             try{
-                number=Integer.parseInt(content.split("Wiki:View")[1].trim());
+                number=Integer.parseInt(content.split("((?i)wiki:view)",2)[1].trim());
             }catch (Exception e){
                 Util.sendMes(event,"参数错误。\r\n命令用法 Wiki:View + <序号>");
                 return true;
@@ -110,7 +110,7 @@ public class Session {
             event.getGroup().sendMessage(message);
             return true;
         }
-        else if(content.startsWith("Wiki:Back")){
+        else if(content.toLowerCase().startsWith("wiki:back")){
             if(!viewDetail){
                 Util.sendMes(event,"不可以在当前上下文中使用该指令！");
                 return true;
@@ -119,14 +119,14 @@ public class Session {
             Util.sendMes(event,"回退成功!");
             return true;
         }
-        else if(content.startsWith("Wiki:Answer")){
+        else if(content.toLowerCase().startsWith("wiki:answer")){
             if(state==State.Write_Answer||state==State.Write_Question){
                 Util.sendMes(event,"不可以在写问题/回答时使用该指令！\r\n请回复Wiki:Abort退出编辑模式之后再尝试。");
                 return true;
             }
             int number;
             try{
-                number=Integer.parseInt(content.split("Wiki:Answer")[1].trim());
+                number=Integer.parseInt(content.split("((?i)wiki:answer)",2)[1].trim());
             }catch (Exception e){
                 Util.sendMes(event,"参数错误。\r\n命令用法 Wiki:Answer + <序号>");
                 return true;
@@ -147,12 +147,12 @@ public class Session {
             state=State.Write_Answer;
             return true;
         }
-        else if(content.startsWith("Wiki:Title")){
+        else if(content.toLowerCase().startsWith("wiki:title")){
             if(state!=State.Write_Question){
                 Util.sendMes(event,"不可以在当前上下文中使用该指令！");
                 return true;
             }
-            String[] temp=content.split("Wiki:Title");
+            String[] temp=content.split("((?i)wiki:title)",2);
             if(temp.length<2){
                 Util.sendMes(event,"参数错误！\r\n命令用法:Wiki:Title + <标题>");
                 return true;
@@ -166,12 +166,12 @@ public class Session {
             Util.sendMes(event,"标题设置成功!");
             return true;
         }
-        else if(content.startsWith("Wiki:Text")){
+        else if(content.toLowerCase().startsWith("wiki:text")){
             if(!(state==State.Write_Answer||state==State.Write_Question)){
                 Util.sendMes(event,"不可以在当前上下文中使用该指令！");
                 return true;
             }
-            String[] temp=content.split("Wiki:Text");
+            String[] temp=content.split("((?i)wiki:text)",2);
             if(temp.length<2){
                 Util.sendMes(event,"参数错误！\r\n命令用法:Wiki:Text + <文本>");
                 return true;
@@ -191,7 +191,7 @@ public class Session {
             Util.sendMes(event,"文本追加成功!");
             return true;
         }
-        else if(content.startsWith("Wiki:Image")){
+        else if(content.toLowerCase().startsWith("wiki:image")){
             if(!(state==State.Write_Answer||state==State.Write_Question)){
                 Util.sendMes(event,"不可以在当前上下文中使用该指令!");
                 return true;
@@ -223,7 +223,7 @@ public class Session {
             Util.sendMes(event,"图片追加成功!");
             return true;
         }
-        else if(content.startsWith("Wiki:Submit")){
+        else if(content.toLowerCase().startsWith("wiki:submit")){
             if(!(state==State.Write_Answer||state==State.Write_Question)){
                 Util.sendMes(event,"不可以在当前上下文中使用该指令!");
                 return true;
@@ -260,7 +260,7 @@ public class Session {
             Util.saveData();
             return true;
         }
-        else if(content.startsWith("Wiki:Abort")){
+        else if(content.toLowerCase().startsWith("wiki:abort")){
             if(!(state==State.Write_Answer||state==State.Write_Question)){
                 Util.sendMes(event,"不可以在当前上下文中使用该指令!");
                 return true;
@@ -269,14 +269,14 @@ public class Session {
             Util.sendMes(event,"已中止。");
             return true;
         }
-        else if(content.startsWith("Wiki:Delete")){
+        else if(content.toLowerCase().startsWith("wiki:delete")){
             if(!(state==State.My_Questions||state==State.My_Answers)){
                 Util.sendMes(event,"不可以在当前上下文中使用该指令!");
                 return true;
             }
             int number;
             try{
-                number=Integer.parseInt(content.split("Wiki:Delete")[1].trim());
+                number=Integer.parseInt(content.split("((?i)wiki:delete)",2)[1].trim());
             }catch (Exception e){
                 Util.sendMes(event,"参数错误。\r\n命令用法 Wiki:Delete + <序号>");
                 return true;
@@ -303,14 +303,14 @@ public class Session {
             Util.saveData();
             return true;
         }
-        else if(content.startsWith("Wiki:Accept")){
+        else if(content.toLowerCase().startsWith("wiki:accept")){
             if(!(state==State.My_Questions&&viewDetail)){
                 Util.sendMes(event,"不可以在当前上下文中使用该指令!");
                 return true;
             }
             int number;
             try{
-                number=Integer.parseInt(content.split("Wiki:Accept")[1].trim());
+                number=Integer.parseInt(content.split("((?i)wiki:accept)",2)[1].trim());
             }catch (Exception e){
                 Util.sendMes(event,"参数错误。\r\n命令用法 Wiki:Accept + <序号>");
                 return true;
@@ -325,7 +325,7 @@ public class Session {
             Util.saveData();
             return true;
         }
-        else if(content.startsWith("Wiki:Further")){
+        else if(content.toLowerCase().startsWith("wiki:further")){
             if(state!=State.My_Questions){
                 Util.sendMes(event,"不可以在当前上下文中使用该指令!");
                 return true;
@@ -347,14 +347,14 @@ public class Session {
         String content=event.getMessage().contentToString();
         Session s=new Session(event);
         s.member=event.getSender();
-        if(content.startsWith("Wiki:Search")){
-            String[] temp=content.split("Wiki:Search");
+        if(content.toLowerCase().startsWith("wiki:search")){
+            String[] temp=content.split("((?i)wiki:search)",2);
             String query;
             if(temp.length<2){
                 Util.sendMes(event,"参数错误。命令用法 Wiki:Search + <关键词>");
                 return null;
             }
-            query=temp[1];
+            query=temp[1].trim();
             s.text=query;
             s.queryData=Util.search(query,event.getGroup().getId());
             if(s.queryData.size()<=0){
@@ -367,7 +367,7 @@ public class Session {
             s.state=State.Search_Question;
             return s;
         }
-        else if(content.startsWith("Wiki:Question")){
+        else if(content.toLowerCase().startsWith("wiki:question")){
             s.state=State.Write_Question;
             s.currentQuestion=new Question();
             s.currentQuestion.questioner=new Questioner();
@@ -381,7 +381,7 @@ public class Session {
                     "输入\"Wiki:Submit\"提交问题");
             return s;
         }
-        else if(content.startsWith("Wiki:MyQuestion")){
+        else if(content.toLowerCase().startsWith("wiki:myquestion")){
             s.state=State.My_Questions;
             s.queryData=Util.myQuestions(event.getGroup().getId(),event.getSender().getId());
             if(s.queryData.size()<=0){
@@ -392,7 +392,7 @@ public class Session {
             Util.sendMes(event,i);
             return s;
         }
-        else if(content.startsWith("Wiki:MyAnswer")){
+        else if(content.toLowerCase().startsWith("wiki:myanswer")){
             s.state=State.My_Answers;
             s.queryData=Util.myAnswers(event.getGroup().getId(),event.getSender().getId());
             if(s.queryData.size()<=0){
@@ -403,7 +403,7 @@ public class Session {
             Util.sendMes(event,i);
             return s;
         }
-        else if(content.startsWith("Wiki:Unsolved")){
+        else if(content.toLowerCase().startsWith("wiki:unsolved")){
             s.state=State.View_Unsolved;
             s.queryData=Util.unsolvedQuestions(event.getGroup().getId());
             if(s.queryData.size()<=0){
@@ -414,12 +414,12 @@ public class Session {
             Util.sendMes(event,i);
             return s;
         }
-        else if(content.startsWith("Wiki:Help")){
+        else if(content.toLowerCase().startsWith("wiki:help")){
             Image i=event.getGroup().uploadImage(Util.helpImage);
             Util.sendMes(event,i);
             return null;
         }
-        else if(content.startsWith("Wiki:")){
+        else if(content.toLowerCase().startsWith("wiki:")){
             Util.sendMes(event,"未知指令或该指令不能在当前上下文中执行，回复Wiki:Help获取帮助。");
             return null;
         }

@@ -11,14 +11,16 @@ import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
+import java.net.URL;
 import java.util.*;
 
 public class Util {
     public static final File questionsLocation=new File("plugins\\Wiki\\questions.bin");
     public static final File whiteListLocation=new File("plugins\\Wiki\\whitelist.txt");
+    public static final String version="Wiki-0.1.1-build20062418.jar";
+    public static URL updateInquireUrl;
+    public static URL updateDownloadUrl;
     public static MiraiLogger logger;
     public static HashMap<Long, ArrayList<Question>> questions;
     public static BufferedImage bgImage;
@@ -289,5 +291,13 @@ public class Util {
             }
         }
         return sb.toString();
+    }
+    public static byte[] streamToByteArray(InputStream is)throws Exception{
+        ByteArrayOutputStream bos=new ByteArrayOutputStream();
+        byte[] buf=new byte[1024];
+        int len;
+        while((len=is.read(buf))!=-1)
+            bos.write(buf,0,len);
+        return bos.toByteArray();
     }
 }

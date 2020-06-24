@@ -7,18 +7,23 @@ import net.mamoe.mirai.message.GroupMessageEvent;
 import net.mamoe.mirai.message.data.At;
 
 import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.*;
+import java.util.Timer;
 
 class Wiki extends PluginBase {
     HashMap<Long, ArrayList<Session>> sessions;
     Listener<GroupMessageEvent> listener;
     Listener<MemberJoinEvent> join;
     Looper looper;
+    Thread looperThread;
+    Timer autoUpdateTimer;
     NotificationServiceProvider provider;
+    boolean optionPaneShown=false;
     @Override
     public void onLoad(){
         getLogger().info("Wiki is being loaded.");
@@ -31,17 +36,51 @@ class Wiki extends PluginBase {
         looper=new Looper();
         provider=new NotificationServiceProvider();
         new Thread(provider).start();
-        new Thread(looper).start();
+        looperThread=new Thread(looper);
+        looperThread.start();
+        try{
+            Util.updateInquireUrl=new URL("http://20bf488.nat123.cc:25547/update?app=wiki");
+            Util.updateDownloadUrl=new URL("http://20bf488.nat123.cc:25547/download?app=wiki");
+        }catch (Exception e){
+            getLogger().error(e);
+        }
+        autoUpdateTimer=new Timer();
+        autoUpdateTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                try{
+                    getLogger().info("检查更新...");
+                    HttpURLConnection conn=(HttpURLConnection) Util.updateInquireUrl.openConnection();
+                    conn.connect();
+                    String result=new String(Util.streamToByteArray(conn.getInputStream()));
+                    if(result.equalsIgnoreCase(Util.version)){
+                        getLogger().info("Wiki已为最新!");
+                        return;
+                    }
+                    conn=(HttpURLConnection) Util.updateDownloadUrl.openConnection();
+                    byte[] jar=Util.streamToByteArray(conn.getInputStream());
+                    FileOutputStream fos=new FileOutputStream("plugins\\"+result+".disabled");
+                    fos.write(jar);
+                    fos.flush();
+                    getLogger().warning("检测到有新版本的Wiki，已下载至plugins文件夹下，请删除旧版Wiki并将最新版Wiki的.disabled后缀名删除，并重启Mirai。");
+                    if(!optionPaneShown) {
+                        JOptionPane.showMessageDialog(null, "检测到有新版本的Wiki\r\n已下载至plugins文件夹下\r\n请删除旧版Wiki并将最新版Wiki的.disabled后缀名删除\r\n并重启Mirai。", "Wiki自动更新", JOptionPane.INFORMATION_MESSAGE);
+                        optionPaneShown=true;
+                    }
+                }catch (Exception e){
+                    getLogger().error(e);
+                }
+            }
+        },0,10*60*1000);
         loadData();
         Util.generateHelpImage();
         listener=getEventListener().subscribeAlways(GroupMessageEvent.class, groupMessageEvent -> {
-            if(groupMessageEvent.getMessage().contentToString().startsWith("Wiki:")) {
+            if(groupMessageEvent.getMessage().contentToString().toLowerCase().startsWith("wiki:")) {
                 if(!looper.queue.isEmpty())
-                    Util.sendMes(groupMessageEvent,"你的请求正在排队。前方有"+looper.queue.size()+"个请求。\r\n" +
-                            "为什么要排队?因为作者没(鸽)有(了)做多线程优化，同时处理多个请求可能会出错。");
+                    Util.sendMes(groupMessageEvent,"你的请求正在排队。前方有"+looper.queue.size()+"个请求。");
                 looper.post(groupMessageEvent);
             }
-            String content=Util.extractPlainText(groupMessageEvent);
+            String content=Util.extractPlainText(groupMessageEvent).trim();
             if(!Util.whiteList.contains(groupMessageEvent.getSender().getId())){
                 provider.cancelAllMatching(groupMessageEvent.getGroup().getId());
             }
@@ -93,15 +132,14 @@ class Wiki extends PluginBase {
         } catch (Exception e) {
             getLogger().error("Failed to load default background image. This problem may be caused by reloading plugins. Restarting Mirai may solve this problem.");
         }
-        try {
-            Process process = Runtime.getRuntime().exec("dir");
-            process.waitFor();
-            if(process.exitValue()==-1)getLogger().warning("Detected non-Windows runtime. Please install font \"Microsoft YaHei\" so that Chinese characters are rendered properly.");
-        } catch (Exception e) {
-            getLogger().warning("Detected non-Windows runtime. Please install font \"Microsoft YaHei\" so that Chinese characters are rendered properly.");
-        }
         if(!System.getProperty("os.name").toLowerCase().contains("win"))
             getLogger().warning("Detected non-Windows runtime. Please install font \"Microsoft YaHei\" so that Chinese characters are rendered properly.");
+        GraphicsEnvironment ge=GraphicsEnvironment.getLocalGraphicsEnvironment();
+        Font[] f=ge.getAllFonts();
+        for(Font temp:f){
+            if(Util.matchesAny(temp.getName(),"微软雅黑","msyh","Microsoft YaHei"))return;
+        }
+        getLogger().error("Font \"Microsoft YaHei\" not found in your system! Chinese characters will not be displayed normally!");
     }
     @Override
     public void onDisable(){
@@ -179,9 +217,15 @@ class Wiki extends PluginBase {
          * @param event 含有命令的群消息事件.
          * */
         public void post(GroupMessageEvent event){
+            getLogger().info("请求已加入队列。");
             queue.add(event);
             synchronized (lock){
                 lock.notify();
+            }
+            if(looperThread.getState()== Thread.State.TERMINATED) {
+                getLogger().error("Looper线程意外终止。尝试重启looper...");
+                looperThread=new Thread(this);
+                looperThread.start();
             }
         }
         public void stop(){
