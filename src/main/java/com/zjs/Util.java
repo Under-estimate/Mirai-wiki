@@ -18,7 +18,7 @@ import java.util.*;
 public class Util {
     public static final File questionsLocation=new File("plugins\\Wiki\\questions.bin");
     public static final File whiteListLocation=new File("plugins\\Wiki\\whitelist.txt");
-    public static final String version="Wiki-0.1.1-build20062418.jar";
+    public static String version="Wiki-0.1.1-build20062419.jar";
     public static URL updateInquireUrl;
     public static URL updateDownloadUrl;
     public static MiraiLogger logger;
@@ -57,6 +57,7 @@ public class Util {
             oos.writeObject(questions);
             oos.writeObject(questionIdPointer);
             oos.flush();
+            oos.close();
         }catch (Exception e){
             logger.error("Failed to save data.",e);
         }

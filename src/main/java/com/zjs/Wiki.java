@@ -62,6 +62,8 @@ class Wiki extends PluginBase {
                     FileOutputStream fos=new FileOutputStream("plugins\\"+result+".disabled");
                     fos.write(jar);
                     fos.flush();
+                    fos.close();
+                    Util.version=result;
                     getLogger().warning("检测到有新版本的Wiki，已下载至plugins文件夹下，请删除旧版Wiki并将最新版Wiki的.disabled后缀名删除，并重启Mirai。");
                     if(!optionPaneShown) {
                         JOptionPane.showMessageDialog(null, "检测到有新版本的Wiki\r\n已下载至plugins文件夹下\r\n请删除旧版Wiki并将最新版Wiki的.disabled后缀名删除\r\n并重启Mirai。", "Wiki自动更新", JOptionPane.INFORMATION_MESSAGE);
@@ -122,6 +124,7 @@ class Wiki extends PluginBase {
                     if(content.equalsIgnoreCase(""))break;
                     Util.whiteList.add(Long.parseLong(content));
                 }
+                br.close();
             } catch (Exception e) {
                 getLogger().error("Invalid whitelist file content.", e);
             }
