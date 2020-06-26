@@ -1,6 +1,6 @@
 name: "Wiki"
 author: "ZhouJingsen"
-version: "0.1.1"
+version: "0.1.2"
 main: "com.zjs.Wiki"
 info: "A QQ group builtin wiki, for answering questions of freshmen."
 depends: []

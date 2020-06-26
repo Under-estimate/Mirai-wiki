@@ -1,5 +1,7 @@
 package com.zjs;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import net.mamoe.mirai.console.plugins.PluginBase;
 import net.mamoe.mirai.event.Listener;
 import net.mamoe.mirai.event.events.MemberJoinEvent;
@@ -7,13 +9,14 @@ import net.mamoe.mirai.message.GroupMessageEvent;
 import net.mamoe.mirai.message.data.At;
 
 import javax.imageio.ImageIO;
-import javax.swing.*;
 import java.awt.*;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.*;
-import java.util.Timer;
 
 class Wiki extends PluginBase {
     HashMap<Long, ArrayList<Session>> sessions;
@@ -23,7 +26,6 @@ class Wiki extends PluginBase {
     Thread looperThread;
     Timer autoUpdateTimer;
     NotificationServiceProvider provider;
-    boolean optionPaneShown=false;
     @Override
     public void onLoad(){
         getLogger().info("Wiki is being loaded.");
@@ -32,10 +34,19 @@ class Wiki extends PluginBase {
     public void onEnable(){
         getLogger().info("Wiki is being enabled.");
         Util.logger=getLogger();
+        if(!Util.configLocation.exists()){
+            getLogger().warning("Config file does not exist, creating one with default config...");
+            Util.config=new Config();
+            Util.config.save(Util.configLocation);
+        }else{
+            Util.config=new Config(Util.configLocation);
+        }
         sessions=new HashMap<>();
         looper=new Looper();
-        provider=new NotificationServiceProvider();
-        new Thread(provider).start();
+        if((boolean)Util.config.getAs(Config.QUESTION_NOTIFICATION)) {
+            provider = new NotificationServiceProvider();
+            new Thread(provider).start();
+        }
         looperThread=new Thread(looper);
         looperThread.start();
         try{
@@ -65,33 +76,47 @@ class Wiki extends PluginBase {
                     fos.close();
                     Util.version=result;
                     getLogger().warning("检测到有新版本的Wiki，已下载至plugins文件夹下，请删除旧版Wiki并将最新版Wiki的.disabled后缀名删除，并重启Mirai。");
-                    if(!optionPaneShown) {
-                        JOptionPane.showMessageDialog(null, "检测到有新版本的Wiki\r\n已下载至plugins文件夹下\r\n请删除旧版Wiki并将最新版Wiki的.disabled后缀名删除\r\n并重启Mirai。", "Wiki自动更新", JOptionPane.INFORMATION_MESSAGE);
-                        optionPaneShown=true;
-                    }
                 }catch (Exception e){
-                    getLogger().error(e);
+                    getLogger().error("Failed to check update.",e);
                 }
             }
         },0,10*60*1000);
         loadData();
         Util.generateHelpImage();
         listener=getEventListener().subscribeAlways(GroupMessageEvent.class, groupMessageEvent -> {
+            JsonArray arr=(JsonArray)Util.config.getAs(Config.GROUP_BLACKLIST);
+            Iterator<JsonElement> it=arr.iterator();
+            JsonElement temp;
+            while(it.hasNext()){
+                temp=it.next();
+                if(groupMessageEvent.getGroup().getId()==temp.getAsLong())
+                    return;
+            }
             if(groupMessageEvent.getMessage().contentToString().toLowerCase().startsWith("wiki:")) {
                 if(!looper.queue.isEmpty())
                     Util.sendMes(groupMessageEvent,"你的请求正在排队。前方有"+looper.queue.size()+"个请求。");
                 looper.post(groupMessageEvent);
             }
-            String content=Util.extractPlainText(groupMessageEvent).trim();
-            if(!Util.whiteList.contains(groupMessageEvent.getSender().getId())){
-                provider.cancelAllMatching(groupMessageEvent.getGroup().getId());
-            }
-            if(!(Util.containsAny(content,"没什么")&&Util.matchesAny(content,"?","？"))&&
-                    Util.containsAny(content,"?","？","吗","呢","怎么","如何","什么")){
-                provider.post(new NotificationService(120*1000,groupMessageEvent));
+            if((boolean)Util.config.getAs(Config.QUESTION_NOTIFICATION)) {
+                String content = Util.extractPlainText(groupMessageEvent).trim();
+                arr = (JsonArray) Util.config.getAs(Config.MEMBER_BLACKLIST);
+                it = arr.iterator();
+                boolean match = false;
+                while (it.hasNext()) {
+                    temp = it.next();
+                    match = match || groupMessageEvent.getGroup().getId() == temp.getAsLong();
+                }
+                if (!match) {
+                    provider.cancelAllMatching(groupMessageEvent.getGroup().getId());
+                    if (!(Util.containsAny(content, "没什么") && Util.matchesAny(content, "?", "？")) &&
+                            Util.containsAny(content, "?", "？", "吗", "呢", "怎么", "如何", "什么")) {
+                        provider.post(new NotificationService(120 * 1000, groupMessageEvent));
+                    }
+                }
             }
         });
-        join=getEventListener().subscribeAlways(MemberJoinEvent.class,event->
+        if((boolean)Util.config.getAs(Config.JOIN_NOTIFICATION))
+            join=getEventListener().subscribeAlways(MemberJoinEvent.class,event->
                 event.getGroup().sendMessage(new At(event.getMember()).plus("欢迎进群~\r\n\r\n" +
                 "本群问答系统已上线，回复Wiki:Help获取使用帮助。")));
     }
@@ -114,26 +139,17 @@ class Wiki extends PluginBase {
                 Util.questions = new HashMap<>();
             }
         }
-        Util.whiteList=new ArrayList<>();
-        if(Util.whiteListLocation.exists()){
-            try {
-                BufferedReader br=new BufferedReader(new FileReader(Util.whiteListLocation));
-                while(true){
-                    String content=br.readLine();
-                    if(content==null)break;
-                    if(content.equalsIgnoreCase(""))break;
-                    Util.whiteList.add(Long.parseLong(content));
-                }
-                br.close();
-            } catch (Exception e) {
-                getLogger().error("Invalid whitelist file content.", e);
-            }
-        }
         try {
-            Util.bgImage = ImageIO.read(this.getClass().getResourceAsStream("/bg.jpeg"));
-            Util.helpImage = ImageIO.read(this.getClass().getResourceAsStream("/help.jpg"));
+            if(Util.config.getAs(Config.RESULT_BACKGROUND).equals("default"))
+                Util.bgImage = ImageIO.read(this.getClass().getResourceAsStream("/bg.jpeg"));
+            else
+                Util.bgImage=ImageIO.read(new File("plugins\\Wiki\\"+Util.config.getAs(Config.RESULT_BACKGROUND)));
+            if(Util.config.getAs(Config.HELP_BACKGROUND).equals("default"))
+                Util.helpImage = ImageIO.read(this.getClass().getResourceAsStream("/help.jpg"));
+            else
+                Util.helpImage=ImageIO.read(new File("plugins\\Wiki\\"+Util.config.getAs(Config.HELP_BACKGROUND)));
         } catch (Exception e) {
-            getLogger().error("Failed to load default background image. This problem may be caused by reloading plugins. Restarting Mirai may solve this problem.");
+            getLogger().error("Failed to load background image.",e);
         }
         if(!System.getProperty("os.name").toLowerCase().contains("win"))
             getLogger().warning("Detected non-Windows runtime. Please install font \"Microsoft YaHei\" so that Chinese characters are rendered properly.");

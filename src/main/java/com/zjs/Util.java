@@ -17,8 +17,8 @@ import java.util.*;
 
 public class Util {
     public static final File questionsLocation=new File("plugins\\Wiki\\questions.bin");
-    public static final File whiteListLocation=new File("plugins\\Wiki\\whitelist.txt");
-    public static String version="Wiki-0.1.1-build20062419.jar";
+    public static final File configLocation=new File("plugins\\Wiki\\config.json");
+    public static String version="Wiki-0.1.2-build20062616.jar";
     public static URL updateInquireUrl;
     public static URL updateDownloadUrl;
     public static MiraiLogger logger;
@@ -26,7 +26,7 @@ public class Util {
     public static BufferedImage bgImage;
     public static BufferedImage helpImage;
     public static int questionIdPointer;
-    public static ArrayList<Long> whiteList;
+    public static Config config;
     public static final String help_1=
             "任何情况下都能够使用的指令\n\n" +
             "Wiki:Search + <关键词> 搜索有关问题\n" +
@@ -135,7 +135,8 @@ public class Util {
         BufferedImage result=new BufferedImage(700,height,BufferedImage.TYPE_3BYTE_BGR);
         Graphics2D g=(Graphics2D)result.getGraphics();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-        g.drawImage(bgImage,null,0,0);
+        Dimension d=(Dimension)config.getAs(Config.RESULT_BACKGROUND_OFFSET);
+        g.drawImage(bgImage,null,d.width,d.height);
         g.setColor(new Color(0,0,0,100));
         g.fillRect(0,0,700,height);
         g.setColor(Color.white);
@@ -175,7 +176,7 @@ public class Util {
         g.drawString("回复\"Wiki:Help\"获取使用帮助",10,height-200);
         g.setColor(Color.lightGray);
         g.setFont(new Font("Microsoft YaHei",Font.PLAIN,15));
-        g.drawString("Wiki v0.1.0 UI",10,height-100);
+        g.drawString("Wiki v0.1.1 UI",10,height-100);
         g.drawString("Developer e-mail: 1260717118@qq.com",10,height-70);
         g.drawString("~ Resolution for FAQs ~",10,height-50);
         return result;
@@ -197,12 +198,13 @@ public class Util {
      * 此方法在插件初始化时调用.
      * */
     public static void generateHelpImage(){
-        Graphics2D g=(Graphics2D) helpImage.getGraphics();
+        BufferedImage temp=new BufferedImage(1020,425,BufferedImage.TYPE_3BYTE_BGR);
+        Graphics2D g=(Graphics2D) temp.getGraphics();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-        int width=helpImage.getWidth();
-        int height=helpImage.getHeight();
+        Dimension d=(Dimension) config.getAs(Config.HELP_BACKGROUND_OFFSET);
+        g.drawImage(helpImage,null,d.width,d.height);
         g.setColor(new Color(0,0,0,100));
-        g.fillRect(0,0,width,height);
+        g.fillRect(0,0,1020,425);
         g.setColor(Color.cyan);
         g.setFont(new Font("Microsoft YaHei",Font.PLAIN,30));
         g.drawString("Wiki Help Page",10,30);
@@ -220,6 +222,7 @@ public class Util {
             g.drawString(st.nextToken(), 522, y);
             y+=30;
         }
+        helpImage=temp;
     }
     /**
      * 获取指定群中指定ID的问题.
