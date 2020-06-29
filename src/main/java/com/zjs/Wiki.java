@@ -2,11 +2,16 @@ package com.zjs;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import net.mamoe.mirai.console.command.BlockingCommand;
+import net.mamoe.mirai.console.command.Command;
+import net.mamoe.mirai.console.command.CommandSender;
+import net.mamoe.mirai.console.command.JCommandManager;
 import net.mamoe.mirai.console.plugins.PluginBase;
 import net.mamoe.mirai.event.Listener;
 import net.mamoe.mirai.event.events.MemberJoinEvent;
 import net.mamoe.mirai.message.GroupMessageEvent;
 import net.mamoe.mirai.message.data.At;
+import org.jetbrains.annotations.NotNull;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -16,6 +21,7 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
 import java.util.*;
 
 class Wiki extends PluginBase {
@@ -25,7 +31,7 @@ class Wiki extends PluginBase {
     Looper looper;
     Thread looperThread;
     Timer autoUpdateTimer;
-    NotificationServiceProvider provider;
+    NotificationServiceProvider provider=null;
     @Override
     public void onLoad(){
         getLogger().info("Wiki is being loaded.");
@@ -34,19 +40,9 @@ class Wiki extends PluginBase {
     public void onEnable(){
         getLogger().info("Wiki is being enabled.");
         Util.logger=getLogger();
-        if(!Util.configLocation.exists()){
-            getLogger().warning("Config file does not exist, creating one with default config...");
-            Util.config=new Config();
-            Util.config.save(Util.configLocation);
-        }else{
-            Util.config=new Config(Util.configLocation);
-        }
+        loadConfig();
         sessions=new HashMap<>();
         looper=new Looper();
-        if((boolean)Util.config.getAs(Config.QUESTION_NOTIFICATION)) {
-            provider = new NotificationServiceProvider();
-            new Thread(provider).start();
-        }
         looperThread=new Thread(looper);
         looperThread.start();
         try{
@@ -115,10 +111,20 @@ class Wiki extends PluginBase {
                 }
             }
         });
-        if((boolean)Util.config.getAs(Config.JOIN_NOTIFICATION))
-            join=getEventListener().subscribeAlways(MemberJoinEvent.class,event->
+        join=getEventListener().subscribeAlways(MemberJoinEvent.class,event->{
+            if((boolean)Util.config.getAs(Config.JOIN_NOTIFICATION))
                 event.getGroup().sendMessage(new At(event.getMember()).plus("欢迎进群~\r\n\r\n" +
-                "本群问答系统已上线，回复Wiki:Help获取使用帮助。")));
+                        "本群问答系统已上线，回复Wiki:Help获取使用帮助。"));});
+        JCommandManager.getInstance().register(this, new BlockingCommand("wiki", new ArrayList<>(),"All wiki commands.","/wiki reloadConfig - 重载配置文件。") {
+            @Override
+            public boolean onCommandBlocking(@NotNull CommandSender commandSender, @NotNull List<String> list) {
+                if(list.size()<1){
+                    commandSender.sendMessageBlocking("缺少参数。");
+                    return false;
+                }
+                return list.get(0).equalsIgnoreCase("reloadConfig");
+            }
+        });
     }
 
     /**
@@ -139,18 +145,7 @@ class Wiki extends PluginBase {
                 Util.questions = new HashMap<>();
             }
         }
-        try {
-            if(Util.config.getAs(Config.RESULT_BACKGROUND).equals("default"))
-                Util.bgImage = ImageIO.read(this.getClass().getResourceAsStream("/bg.jpeg"));
-            else
-                Util.bgImage=ImageIO.read(new File("plugins\\Wiki\\"+Util.config.getAs(Config.RESULT_BACKGROUND)));
-            if(Util.config.getAs(Config.HELP_BACKGROUND).equals("default"))
-                Util.helpImage = ImageIO.read(this.getClass().getResourceAsStream("/help.jpg"));
-            else
-                Util.helpImage=ImageIO.read(new File("plugins\\Wiki\\"+Util.config.getAs(Config.HELP_BACKGROUND)));
-        } catch (Exception e) {
-            getLogger().error("Failed to load background image.",e);
-        }
+
         if(!System.getProperty("os.name").toLowerCase().contains("win"))
             getLogger().warning("Detected non-Windows runtime. Please install font \"Microsoft YaHei\" so that Chinese characters are rendered properly.");
         GraphicsEnvironment ge=GraphicsEnvironment.getLocalGraphicsEnvironment();
@@ -164,6 +159,47 @@ class Wiki extends PluginBase {
     public void onDisable(){
         looper.stop();
         provider.stop();
+    }
+    @Override
+    public void onCommand(@NotNull Command command, @NotNull CommandSender sender, @NotNull List<String> args){
+        if(args.get(0).equalsIgnoreCase("reloadConfig")){
+            sender.sendMessageBlocking("重载配置文件...");
+            loadConfig();
+            sender.sendMessageBlocking("重载完成!");
+        }
+    }
+    /**
+     * 加载配置文件。
+     * */
+    private void loadConfig(){
+        if(!Util.configLocation.exists()){
+            getLogger().warning("Config file does not exist, creating one with default config...");
+            Util.config=new Config();
+            Util.config.save(Util.configLocation);
+        }else{
+            Util.config=new Config(Util.configLocation);
+        }
+        if((boolean)Util.config.getAs(Config.QUESTION_NOTIFICATION)) {
+            provider = new NotificationServiceProvider();
+            new Thread(provider).start();
+        }else{
+            if(provider!=null)
+                provider.stop();
+            provider=null;
+        }
+        try {
+            if(Util.config.getAs(Config.RESULT_BACKGROUND).equals("default"))
+                Util.bgImage = ImageIO.read(this.getClass().getResourceAsStream("/bg.jpeg"));
+            else
+                Util.bgImage=ImageIO.read(new File("plugins\\Wiki\\"+Util.config.getAs(Config.RESULT_BACKGROUND)));
+            if(Util.config.getAs(Config.HELP_BACKGROUND).equals("default"))
+                Util.helpImage = ImageIO.read(this.getClass().getResourceAsStream("/help.jpg"));
+            else
+                Util.helpImage=ImageIO.read(new File("plugins\\Wiki\\"+Util.config.getAs(Config.HELP_BACKGROUND)));
+        } catch (Exception e) {
+            getLogger().error("Failed to load background image.",e);
+        }
+        Util.generateHelpImage();
     }
     /**
      * 循环处理正在排队的请求.

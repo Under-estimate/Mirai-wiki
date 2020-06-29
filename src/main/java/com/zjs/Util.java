@@ -18,7 +18,7 @@ import java.util.*;
 public class Util {
     public static final File questionsLocation=new File("plugins\\Wiki\\questions.bin");
     public static final File configLocation=new File("plugins\\Wiki\\config.json");
-    public static String version="Wiki-0.1.2-build20062616.jar";
+    public static String version="Wiki-0.1.2-build20062923.jar";
     public static URL updateInquireUrl;
     public static URL updateDownloadUrl;
     public static MiraiLogger logger;
@@ -176,7 +176,7 @@ public class Util {
         g.drawString("回复\"Wiki:Help\"获取使用帮助",10,height-200);
         g.setColor(Color.lightGray);
         g.setFont(new Font("Microsoft YaHei",Font.PLAIN,15));
-        g.drawString("Wiki v0.1.1 UI",10,height-100);
+        g.drawString("Wiki v0.1.2 UI",10,height-100);
         g.drawString("Developer e-mail: 1260717118@qq.com",10,height-70);
         g.drawString("~ Resolution for FAQs ~",10,height-50);
         return result;

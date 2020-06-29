@@ -1,6 +1,8 @@
 # Mirai-wiki
 基于[mirai](https://github.com/mamoe/mirai)的QQ群内问答系统插件  
-Mirai Core 版本 `1.0.2`
+Mirai Core 版本 `1.0.3`  
+Mirai Console 版本 `0.5.2`  
+** 注意: 暂不支持 Mirai Console `1.0-dev-1` 版本，因为它还不是一个稳定的版本。你可以尝试更改旧版本console的文件名中的版本号来避免版本更新。 **
 
 ## 使用方法
 将插件放入plugins文件夹内即可使用。
@@ -33,3 +35,8 @@ Wiki:Abort 终止提出问题/写回答
 Wiki:Delete 删除问题/回答  
 Wiki:Accept 接受回答并标记问题为"解决"  
 Wiki:Further 表示需要更多信息，将问题标记为"追问"  
+### 管理员(manager)指令
+/wiki reloadConfig 在无需重启mirai的情况下重载配置文件。
+
+## 获取插件jar文件
+您可以通过访问[自动更新网站](http://20bf488.nat123.cc:25547/download?app=wiki)来获取最新版的jar文件。
