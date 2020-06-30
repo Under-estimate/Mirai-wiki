@@ -2,7 +2,7 @@
 基于[mirai](https://github.com/mamoe/mirai)的QQ群内问答系统插件  
 Mirai Core 版本 `1.0.3`  
 Mirai Console 版本 `0.5.2`  
-** 注意: 暂不支持 Mirai Console `1.0-dev-1` 版本，因为它还不是一个稳定的版本。你可以尝试更改旧版本console的文件名中的版本号来避免版本更新。 **
+**注意: 暂不支持 Mirai Console `1.0-dev-1` 版本，因为它还不是一个稳定的版本。你可以尝试更改旧版本console的文件名中的版本号来避免版本更新。**
 
 ## 使用方法
 将插件放入plugins文件夹内即可使用。
