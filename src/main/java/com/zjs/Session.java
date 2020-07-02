@@ -139,11 +139,8 @@ public class Session {
             currentAnswer=new Answerer();
             currentAnswer.id=event.getSender().getId();
             currentAnswer.name=event.getSenderName();
-            Util.sendMes(event,"你正在为一个问题写回答。\r\n" +
-                    "输入\"Wiki:Text <文本>\"给你的回答追加文本。\r\n" +
-                    "输入\"Wiki:Image [图片]\"给你的回答追加图片。\r\n" +
-                    "输入\"Wiki:Abort\"取消写回答\r\n" +
-                    "输入\"Wiki:Submit\"提交回答");
+            Util.sendMes(event,"开始写回答!\n" +
+                    "回复\"Wiki:Help Answer\"获取相关帮助");
             state=State.Write_Answer;
             return true;
         }
@@ -373,12 +370,15 @@ public class Session {
             s.currentQuestion.questioner=new Questioner();
             s.currentQuestion.questioner.id=s.member.getId();
             s.currentQuestion.questioner.name=s.member.getNameCard();
-            Util.sendMes(event,"你正在创建一个问题\r\n" +
-                    "输入\"Wiki:Title <标题>\"给问题设定一个标题。\r\n" +
-                    "输入\"Wiki:Text <文本>\"给问题追加文本\r\n" +
-                    "输入\"Wiki:Image [图片]\"给问题追加图片\r\n" +
-                    "输入\"Wiki:Abort\"取消创建问题。\r\n" +
-                    "输入\"Wiki:Submit\"提交问题");
+            String[] temp=content.split("((?i)wiki:question)",2);
+            if(temp.length<2){
+                Util.sendMes(event,"开始创建问题!\n" +
+                        "回复\"Wiki:Help question\"获取相关帮助");
+                return s;
+            }
+            s.currentQuestion.title=temp[1];
+            Util.sendMes(event,"开始创建标题为\""+temp[1]+"\"的问题!\n" +
+                    "回复\"Wiki:Help question\"获取相关帮助");
             return s;
         }
         else if(content.toLowerCase().startsWith("wiki:myquestion")){
@@ -415,9 +415,34 @@ public class Session {
             return s;
         }
         else if(content.toLowerCase().startsWith("wiki:help")){
-            Image i=event.getGroup().uploadImage(Util.helpImage);
-            Util.sendMes(event,i);
-            return null;
+            String[] temp=content.split("((?i)wiki:help)",2);
+            if(temp.length<2){
+                Image i=event.getGroup().uploadImage(Util.helpImage);
+                Util.sendMes(event,i);
+                return null;
+            }
+            if(temp[1].equalsIgnoreCase("question")){
+                Util.sendMes(event,"帮助主题:如何提出问题\n" +
+                        "1.回复\"Wiki:Question (+ <标题>)\"来开始创建问题\n" +
+                        "2.回复\"Wiki:Title + <标题>\"为问题设置标题(第一步设置过的可以不用设置)\n" +
+                        "3.回复\"Wiki:Text + <文本>\"为问题添加文本(可添加多次)\n" +
+                        "4.(可选)回复\"Wiki:Image + [图片]\"为问题添加图片(一次只能添加一张，可添加多次)\n" +
+                        "5.回复\"Wiki:Submit\"提交问题\n" +
+                        "如果想要放弃创建问题，回复\"Wiki:Abort\"即可");
+            }else if(temp[1].equalsIgnoreCase("answer")){
+                Util.sendMes(event,"帮助主题:如何回答问题\n" +
+                        "1.回复\"Wiki:Unsolved\"查看本群未解决的问题\n" +
+                        "2.回复\"Wiki:Answer + <序号>\"开始为指定的问题写回答\n" +
+                        "3.回复\"Wiki:Text + <文本>\"为回答添加文本(可添加多次)\n" +
+                        "4.(可选)回复\"Wiki:Image +[图片]\"为回答添加图片(一次只能添加一张，可添加多次)\n" +
+                        "5.回复\"Wiki:Submit\"提交回答\n" +
+                        "如果想要放弃创建回答，回复\"Wiki:Abort\"即可");
+            }else{
+                Util.sendMes(event,"未知帮助主题\n" +
+                        "可用帮助主题列表:" +
+                        "Question: 如何提出问题\n" +
+                        "Answer: 如何回答问题\n");
+            }
         }
         else if(content.toLowerCase().startsWith("wiki:")){
             Util.sendMes(event,"未知指令或该指令不能在当前上下文中执行，回复Wiki:Help获取帮助。");

@@ -18,7 +18,7 @@ import java.util.*;
 public class Util {
     public static final File questionsLocation=new File("plugins\\Wiki\\questions.bin");
     public static final File configLocation=new File("plugins\\Wiki\\config.json");
-    public static String version="Wiki-0.1.2-build20062923.jar";
+    public static String version="Wiki-0.1.2-build20070212.jar";
     public static URL updateInquireUrl;
     public static URL updateDownloadUrl;
     public static MiraiLogger logger;
@@ -30,10 +30,11 @@ public class Util {
     public static final String help_1=
             "任何情况下都能够使用的指令\n\n" +
             "Wiki:Search + <关键词> 搜索有关问题\n" +
-            "Wiki:Question 提出问题\n" +
+            "Wiki:Question (+ <标题>) 提出问题\n" +
             "Wiki:MyQuestion 查看自己提出的问题\n" +
             "Wiki:MyAnswer 查看自己回答过的问题\n" +
-            "Wiki:Unsolved 查看本群中未解决的问题";
+            "Wiki:Unsolved 查看本群中未解决的问题\n" +
+            "Wiki:Help (+ <主题>) 显示帮助";
     public static final String help_2=
             "在一定上下文中能够使用的指令\n\n" +
                     "Wiki:Page + <页码> 跳转到指定页\n" +
@@ -83,9 +84,7 @@ public class Util {
             if(match>0)searchCache.put(tempQuestion.questionId,match);
         }
         Long[] result= searchCache.keySet().toArray(new Long[0]);
-        Arrays.sort(result, (Comparator<Long>) (o1, o2) -> {
-            return searchCache.get(o2)-searchCache.get(o1);
-        });
+        Arrays.sort(result, (o1, o2) -> searchCache.get(o2)-searchCache.get(o1));
         ArrayList<Question> resultList=new ArrayList<>();
         for(Long questionId:result)
             resultList.add(get(groupId,questionId));
@@ -97,6 +96,7 @@ public class Util {
     public static @NotNull ArrayList<Question> myQuestions(long groupId, long userId){
         ArrayList<Question> groupQuestions=questions.get(groupId);
         ArrayList<Question> result=new ArrayList<>();
+        if(groupQuestions==null)return result;
         for(Question q:groupQuestions)
             if(q.questioner.id==userId)result.add(q);
         return result;
@@ -107,6 +107,7 @@ public class Util {
     public static @NotNull ArrayList<Question> myAnswers(long groupId, long userId){
         ArrayList<Question> groupQuestions=questions.get(groupId);
         ArrayList<Question> result=new ArrayList<>();
+        if(groupQuestions==null)return result;
         for(Question q:groupQuestions){
             for (Answerer answerer : q.answererList)
                 if (answerer.id == userId) result.add(q);
@@ -119,6 +120,7 @@ public class Util {
     public static @NotNull ArrayList<Question> unsolvedQuestions(long groupId){
         ArrayList<Question> groupQuestions=questions.get(groupId);
         ArrayList<Question> result=new ArrayList<>();
+        if(groupQuestions==null)return result;
         for(Question q:groupQuestions)
             if(q.requireFurtherInfo||q.answererList.size()<=0)result.add(q);
         return result;

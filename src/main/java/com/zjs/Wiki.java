@@ -100,7 +100,7 @@ class Wiki extends PluginBase {
                 boolean match = false;
                 while (it.hasNext()) {
                     temp = it.next();
-                    match = match || groupMessageEvent.getGroup().getId() == temp.getAsLong();
+                    match = match || groupMessageEvent.getSender().getId() == temp.getAsLong();
                 }
                 if (!match) {
                     provider.cancelAllMatching(groupMessageEvent.getGroup().getId());
