@@ -22,11 +22,11 @@ import java.util.Iterator;
 public class Session {
     Group group;
     Member member;
-    State state;
-    ArrayList<Question> queryData;
-    Question currentQuestion;
-    String text;
-    Answerer currentAnswer;
+    State state=null;
+    ArrayList<Question> queryData=null;
+    Question currentQuestion=null;
+    String text=null;
+    Answerer currentAnswer=null;
     boolean viewDetail=false;
     private Session(@NotNull GroupMessageEvent event){
         this.group=event.getGroup();
@@ -41,17 +41,20 @@ public class Session {
      * @return 给定的群消息是否包含一个合理的动作.
      * */
     public boolean parseAction(@NotNull GroupMessageEvent event){
-        String content=event.getMessage().contentToString();
-        if(content.toLowerCase().startsWith("wiki:page")){
+        String content=event.getMessage().contentToString().trim();
+        if(!content.toLowerCase().startsWith("wiki"))
+            return false;
+        content=content.split("((?i)wiki)",2)[1].trim();
+        if(content.toLowerCase().startsWith("page")){
             if(state==State.Write_Answer||state==State.Write_Question){
                 Util.sendMes(event,"不可以在当前上下文中使用该指令！");
                 return true;
             }
             int page;
             try{
-                page=Integer.parseInt(content.split("((?i)wiki:page)",2)[1].trim());
+                page=Integer.parseInt(content.split("((?i)page)",2)[1].trim());
             }catch (Exception e){
-                Util.sendMes(event,"参数错误。\r\n命令用法 Wiki:Page + <页码>");
+                Util.sendMes(event,"参数错误。\r\n命令用法 Wiki Page <页码>");
                 return true;
             }
             if (viewDetail) {
@@ -64,12 +67,10 @@ public class Session {
                     message = new At(event.getSender()).plus(currentQuestion.toString());
                     for (SerializableImage image : currentQuestion.images)
                         message=message.plus(event.getGroup().uploadImage(image.bi));
-                    Util.logger.debug("currentAnswer Image size:"+currentAnswer.images.size());
                 }else{
                     message = new At(event.getSender()).plus(currentQuestion.answererList.get(page - 1).toString());
                     for (SerializableImage image : currentQuestion.answererList.get(page-1).images)
                         message=message.plus(event.getGroup().uploadImage(image.bi));
-                    Util.logger.debug("currentQuestion Image size:"+currentQuestion.images.size());
                 }
                 Util.sendMes(event,message);
             }else {
@@ -86,16 +87,16 @@ public class Session {
             }
             return true;
         }
-        else if(content.toLowerCase().startsWith("wiki:view")){
+        else if(content.toLowerCase().startsWith("view")){
             if(state==State.Write_Answer||state==State.Write_Question){
                 Util.sendMes(event,"不可以在当前上下文中使用该指令！");
                 return true;
             }
             int number;
             try{
-                number=Integer.parseInt(content.split("((?i)wiki:view)",2)[1].trim());
+                number=Integer.parseInt(content.split("((?i)view)",2)[1].trim());
             }catch (Exception e){
-                Util.sendMes(event,"参数错误。\r\n命令用法 Wiki:View + <序号>");
+                Util.sendMes(event,"参数错误。\r\n命令用法 Wiki:View <序号>");
                 return true;
             }
             if(number<0||number>=queryData.size()){
@@ -110,7 +111,7 @@ public class Session {
             event.getGroup().sendMessage(message);
             return true;
         }
-        else if(content.toLowerCase().startsWith("wiki:back")){
+        else if(content.toLowerCase().startsWith("back")){
             if(!viewDetail){
                 Util.sendMes(event,"不可以在当前上下文中使用该指令！");
                 return true;
@@ -119,16 +120,16 @@ public class Session {
             Util.sendMes(event,"回退成功!");
             return true;
         }
-        else if(content.toLowerCase().startsWith("wiki:answer")){
+        else if(content.toLowerCase().startsWith("answer")){
             if(state==State.Write_Answer||state==State.Write_Question){
-                Util.sendMes(event,"不可以在写问题/回答时使用该指令！\r\n请回复Wiki:Abort退出编辑模式之后再尝试。");
+                Util.sendMes(event,"不可以在写问题/回答时使用该指令！\r\n请回复Wiki Abort退出编辑模式之后再尝试。");
                 return true;
             }
             int number;
             try{
-                number=Integer.parseInt(content.split("((?i)wiki:answer)",2)[1].trim());
+                number=Integer.parseInt(content.split("((?i)answer)",2)[1].trim());
             }catch (Exception e){
-                Util.sendMes(event,"参数错误。\r\n命令用法 Wiki:Answer + <序号>");
+                Util.sendMes(event,"参数错误。\r\n命令用法 Wiki Answer <序号>");
                 return true;
             }
             if(number<0||number>=queryData.size()){
@@ -140,42 +141,42 @@ public class Session {
             currentAnswer.id=event.getSender().getId();
             currentAnswer.name=event.getSenderName();
             Util.sendMes(event,"开始写回答!\n" +
-                    "回复\"Wiki:Help Answer\"获取相关帮助");
+                    "回复\"Wiki Help Answer\"获取相关帮助");
             state=State.Write_Answer;
             return true;
         }
-        else if(content.toLowerCase().startsWith("wiki:title")){
+        else if(content.toLowerCase().startsWith("title")){
             if(state!=State.Write_Question){
                 Util.sendMes(event,"不可以在当前上下文中使用该指令！");
                 return true;
             }
-            String[] temp=content.split("((?i)wiki:title)",2);
+            String[] temp=content.split("((?i)title)",2);
             if(temp.length<2){
-                Util.sendMes(event,"参数错误！\r\n命令用法:Wiki:Title + <标题>");
+                Util.sendMes(event,"参数错误！\r\n命令用法:Wiki Title <标题>");
                 return true;
             }
             String title=temp[1].trim();
             if(title.equalsIgnoreCase("")){
-                Util.sendMes(event,"参数错误！\r\n命令用法:Wiki:Title + <标题>");
+                Util.sendMes(event,"参数错误！\r\n命令用法:Wiki Title <标题>");
                 return true;
             }
             currentQuestion.title=title;
             Util.sendMes(event,"标题设置成功!");
             return true;
         }
-        else if(content.toLowerCase().startsWith("wiki:text")){
+        else if(content.toLowerCase().startsWith("text")){
             if(!(state==State.Write_Answer||state==State.Write_Question)){
                 Util.sendMes(event,"不可以在当前上下文中使用该指令！");
                 return true;
             }
-            String[] temp=content.split("((?i)wiki:text)",2);
+            String[] temp=content.split("((?i)text)",2);
             if(temp.length<2){
-                Util.sendMes(event,"参数错误！\r\n命令用法:Wiki:Text + <文本>");
+                Util.sendMes(event,"参数错误！\r\n命令用法:Wiki Text <文本>");
                 return true;
             }
             String text=temp[1].trim();
             if(text.equalsIgnoreCase("")){
-                Util.sendMes(event,"参数错误！\r\n命令用法:Wiki:Text + <文本>");
+                Util.sendMes(event,"参数错误！\r\n命令用法:Wiki Text <文本>");
                 return true;
             }
             if(state==State.Write_Answer){
@@ -188,7 +189,7 @@ public class Session {
             Util.sendMes(event,"文本追加成功!");
             return true;
         }
-        else if(content.toLowerCase().startsWith("wiki:image")){
+        else if(content.toLowerCase().startsWith("image")){
             if(!(state==State.Write_Answer||state==State.Write_Question)){
                 Util.sendMes(event,"不可以在当前上下文中使用该指令!");
                 return true;
@@ -209,7 +210,7 @@ public class Session {
                 }
             }
             if(im==null){
-                Util.sendMes(event,"参数错误，没有检测到有效图片。\r\n命令用法 Wiki:Image + [图片]");
+                Util.sendMes(event,"参数错误，没有检测到有效图片。\r\n命令用法 Wiki Image [图片]");
                 return true;
             }
             if(state==State.Write_Answer){
@@ -220,14 +221,14 @@ public class Session {
             Util.sendMes(event,"图片追加成功!");
             return true;
         }
-        else if(content.toLowerCase().startsWith("wiki:submit")){
+        else if(content.toLowerCase().startsWith("submit")){
             if(!(state==State.Write_Answer||state==State.Write_Question)){
                 Util.sendMes(event,"不可以在当前上下文中使用该指令!");
                 return true;
             }
             if(state==State.Write_Answer){
                 if(currentAnswer.text==null){
-                    Util.sendMes(event,"回答没有文本!请回复\"Wiki:Text + <文本>\"为回答追加文本。");
+                    Util.sendMes(event,"回答没有文本!请回复\"Wiki Text <文本>\"为回答追加文本。");
                     return true;
                 }
                 currentQuestion.answererList.add(currentAnswer);
@@ -240,11 +241,11 @@ public class Session {
                 }
             }else{
                 if(currentQuestion.title==null){
-                    Util.sendMes(event,"问题没有题目!请回复\"Wiki:Title + <题目>\"为问题设置题目。");
+                    Util.sendMes(event,"问题没有题目!请回复\"Wiki Title <题目>\"为问题设置题目。");
                     return true;
                 }
                 if(currentQuestion.text==null){
-                    Util.sendMes(event,"问题没有文本!请回复\"Wiki:Text + <文本>\"为问题追加文本。");
+                    Util.sendMes(event,"问题没有文本!请回复\"Wiki Text <文本>\"为问题追加文本。");
                     return true;
                 }
                 currentQuestion.questionId=Util.questionIdPointer++;
@@ -257,7 +258,7 @@ public class Session {
             Util.saveData();
             return true;
         }
-        else if(content.toLowerCase().startsWith("wiki:abort")){
+        else if(content.toLowerCase().startsWith("abort")){
             if(!(state==State.Write_Answer||state==State.Write_Question)){
                 Util.sendMes(event,"不可以在当前上下文中使用该指令!");
                 return true;
@@ -266,16 +267,16 @@ public class Session {
             Util.sendMes(event,"已中止。");
             return true;
         }
-        else if(content.toLowerCase().startsWith("wiki:delete")){
+        else if(content.toLowerCase().startsWith("delete")){
             if(!(state==State.My_Questions||state==State.My_Answers)){
                 Util.sendMes(event,"不可以在当前上下文中使用该指令!");
                 return true;
             }
             int number;
             try{
-                number=Integer.parseInt(content.split("((?i)wiki:delete)",2)[1].trim());
+                number=Integer.parseInt(content.split("((?i)delete)",2)[1].trim());
             }catch (Exception e){
-                Util.sendMes(event,"参数错误。\r\n命令用法 Wiki:Delete + <序号>");
+                Util.sendMes(event,"参数错误。\r\n命令用法 Wiki Delete <序号>");
                 return true;
             }
             if(number<0||number>=queryData.size()){
@@ -300,16 +301,16 @@ public class Session {
             Util.saveData();
             return true;
         }
-        else if(content.toLowerCase().startsWith("wiki:accept")){
+        else if(content.toLowerCase().startsWith("accept")){
             if(!(state==State.My_Questions&&viewDetail)){
                 Util.sendMes(event,"不可以在当前上下文中使用该指令!");
                 return true;
             }
             int number;
             try{
-                number=Integer.parseInt(content.split("((?i)wiki:accept)",2)[1].trim());
+                number=Integer.parseInt(content.split("((?i)accept)",2)[1].trim());
             }catch (Exception e){
-                Util.sendMes(event,"参数错误。\r\n命令用法 Wiki:Accept + <序号>");
+                Util.sendMes(event,"参数错误。\r\n命令用法 Wiki Accept <序号>");
                 return true;
             }
             if(number<=0||number>currentQuestion.answererList.size()){
@@ -322,9 +323,13 @@ public class Session {
             Util.saveData();
             return true;
         }
-        else if(content.toLowerCase().startsWith("wiki:further")){
+        else if(content.toLowerCase().startsWith("further")){
             if(state!=State.My_Questions){
                 Util.sendMes(event,"不可以在当前上下文中使用该指令!");
+                return true;
+            }
+            if(currentQuestion==null){
+                Util.sendMes(event,"请使用\"Wiki View <序号>\"查看问题后再使用此指令。");
                 return true;
             }
             currentQuestion.requireFurtherInfo=true;
@@ -336,19 +341,22 @@ public class Session {
     }
     /**
      * 在给定的群消息中解析会话.
-     * 能够启动会话的命令包含:Search,Question,MyQuestion,MyAnswer,Unsolved,Help.即不需要上下文就能执行的指令.
+     * 能够启动会话的命令包含:Search,Question,MyQuestion,MyAnswer,Unsolved,All,Help.即不需要上下文就能执行的指令.
      *
      * @return 如果群消息中含有能启动会话的指令,则返回创建的会话,否则返回null.
      * */
     public static @Nullable Session parseSession(@NotNull GroupMessageEvent event){
-        String content=event.getMessage().contentToString();
+        String content=event.getMessage().contentToString().trim();
+        if(!content.toLowerCase().startsWith("wiki"))
+            return null;
+        content=content.split("((?i)wiki)",2)[1].trim();
         Session s=new Session(event);
         s.member=event.getSender();
-        if(content.toLowerCase().startsWith("wiki:search")){
-            String[] temp=content.split("((?i)wiki:search)",2);
+        if(content.toLowerCase().startsWith("search")){
+            String[] temp=content.split("((?i)search)",2);
             String query;
             if(temp.length<2){
-                Util.sendMes(event,"参数错误。命令用法 Wiki:Search + <关键词>");
+                Util.sendMes(event,"参数错误。命令用法 Wiki Search <关键词>");
                 return null;
             }
             query=temp[1].trim();
@@ -364,46 +372,46 @@ public class Session {
             s.state=State.Search_Question;
             return s;
         }
-        else if(content.toLowerCase().startsWith("wiki:question")){
+        else if(content.toLowerCase().startsWith("question")){
             s.state=State.Write_Question;
             s.currentQuestion=new Question();
             s.currentQuestion.questioner=new Questioner();
             s.currentQuestion.questioner.id=s.member.getId();
             s.currentQuestion.questioner.name=s.member.getNameCard();
-            String[] temp=content.split("((?i)wiki:question)",2);
+            String[] temp=content.split("((?i)question)",2);
             if(temp.length<2){
                 Util.sendMes(event,"开始创建问题!\n" +
-                        "回复\"Wiki:Help question\"获取相关帮助");
+                        "回复\"Wiki Help Question\"获取相关帮助");
                 return s;
             }
             s.currentQuestion.title=temp[1];
             Util.sendMes(event,"开始创建标题为\""+temp[1]+"\"的问题!\n" +
-                    "回复\"Wiki:Help question\"获取相关帮助");
+                    "回复\"Wiki Help Question\"获取相关帮助");
             return s;
         }
-        else if(content.toLowerCase().startsWith("wiki:myquestion")){
+        else if(content.toLowerCase().startsWith("myquestion")){
             s.state=State.My_Questions;
             s.queryData=Util.myQuestions(event.getGroup().getId(),event.getSender().getId());
             if(s.queryData.size()<=0){
-                Util.sendMes(event,"你还没有提出问题。\r\n回复\"Wiki:Question\"来提出一个问题，群大佬可能会帮助你哦。");
+                Util.sendMes(event,"你还没有提出问题。\r\n回复\"Wiki Question\"来提出一个问题，群大佬可能会帮助你哦。");
                 return null;
             }
             Image i=event.getGroup().uploadImage(Util.generateMyQuestionsImage(s.queryData,0,event.getSenderName()));
             Util.sendMes(event,i);
             return s;
         }
-        else if(content.toLowerCase().startsWith("wiki:myanswer")){
+        else if(content.toLowerCase().startsWith("myanswer")){
             s.state=State.My_Answers;
             s.queryData=Util.myAnswers(event.getGroup().getId(),event.getSender().getId());
             if(s.queryData.size()<=0){
-                Util.sendMes(event,"你还没有回答过问题。\r\n回复\"Wiki:Unsolved\"获取未解决的问题列表。");
+                Util.sendMes(event,"你还没有回答过问题。\r\n回复\"Wiki Unresolved\"获取未解决的问题列表。");
                 return null;
             }
             Image i=event.getGroup().uploadImage(Util.generateMyAnswersImage(s.queryData,0,event.getSenderName()));
             Util.sendMes(event,i);
             return s;
         }
-        else if(content.toLowerCase().startsWith("wiki:unsolved")){
+        else if(content.toLowerCase().startsWith("unresolved")){
             s.state=State.View_Unsolved;
             s.queryData=Util.unsolvedQuestions(event.getGroup().getId());
             if(s.queryData.size()<=0){
@@ -414,39 +422,53 @@ public class Session {
             Util.sendMes(event,i);
             return s;
         }
-        else if(content.toLowerCase().startsWith("wiki:help")){
-            String[] temp=content.split("((?i)wiki:help)",2);
-            if(temp.length<2){
+        else if(content.toLowerCase().startsWith("all")){
+            s.state=State.View_All;
+            if(!Util.questions.containsKey(event.getGroup().getId())) {
+                Util.sendMes(event, "本群还没有人提出过问题!");
+                return null;
+            }
+            if(Util.questions.get(event.getGroup().getId()).size()<=0){
+                Util.sendMes(event, "本群还没有人提出过问题!");
+                return null;
+            }
+            s.queryData=Util.questions.get(event.getGroup().getId());
+            Image i=event.getGroup().uploadImage(Util.generateAllQuestionImage(s.queryData,0,event.getSenderName()));
+            Util.sendMes(event,i);
+            return s;
+        }
+        else if(content.toLowerCase().startsWith("help")){
+            String[] temp=content.split("((?i)help)",2);
+            String theme=temp[1].trim();
+            if(theme.equalsIgnoreCase("")){
                 Image i=event.getGroup().uploadImage(Util.helpImage);
                 Util.sendMes(event,i);
                 return null;
-            }
-            if(temp[1].equalsIgnoreCase("question")){
+            }else if(theme.equalsIgnoreCase("question")){
                 Util.sendMes(event,"帮助主题:如何提出问题\n" +
-                        "1.回复\"Wiki:Question (+ <标题>)\"来开始创建问题\n" +
-                        "2.回复\"Wiki:Title + <标题>\"为问题设置标题(第一步设置过的可以不用设置)\n" +
-                        "3.回复\"Wiki:Text + <文本>\"为问题添加文本(可添加多次)\n" +
-                        "4.(可选)回复\"Wiki:Image + [图片]\"为问题添加图片(一次只能添加一张，可添加多次)\n" +
-                        "5.回复\"Wiki:Submit\"提交问题\n" +
-                        "如果想要放弃创建问题，回复\"Wiki:Abort\"即可");
-            }else if(temp[1].equalsIgnoreCase("answer")){
+                        "1.回复\"Wiki Question (标题)\"来开始创建问题\n" +
+                        "2.回复\"Wiki Title <标题>\"为问题设置标题(第一步设置过的可以不用设置)\n" +
+                        "3.回复\"Wiki Text <文本>\"为问题添加文本(可添加多次)\n" +
+                        "4.(可选)回复\"Wiki Image [图片]\"为问题添加图片(一次只能添加一张，可添加多次)\n" +
+                        "5.回复\"Wiki Submit\"提交问题\n" +
+                        "如果想要放弃创建问题，回复\"Wiki Abort\"即可");
+            }else if(theme.equalsIgnoreCase("answer")){
                 Util.sendMes(event,"帮助主题:如何回答问题\n" +
-                        "1.回复\"Wiki:Unsolved\"查看本群未解决的问题\n" +
-                        "2.回复\"Wiki:Answer + <序号>\"开始为指定的问题写回答\n" +
-                        "3.回复\"Wiki:Text + <文本>\"为回答添加文本(可添加多次)\n" +
-                        "4.(可选)回复\"Wiki:Image +[图片]\"为回答添加图片(一次只能添加一张，可添加多次)\n" +
-                        "5.回复\"Wiki:Submit\"提交回答\n" +
-                        "如果想要放弃创建回答，回复\"Wiki:Abort\"即可");
+                        "1.回复\"Wiki Unsolved\"查看本群未解决的问题\n" +
+                        "2.回复\"Wiki Answer <序号>\"开始为指定的问题写回答\n" +
+                        "3.回复\"Wiki Text <文本>\"为回答添加文本(可添加多次)\n" +
+                        "4.(可选)回复\"Wiki Image [图片]\"为回答添加图片(一次只能添加一张，可添加多次)\n" +
+                        "5.回复\"Wiki Submit\"提交回答\n" +
+                        "如果想要放弃创建回答，回复\"Wiki Abort\"即可");
             }else{
                 Util.sendMes(event,"未知帮助主题\n" +
                         "可用帮助主题列表:" +
                         "Question: 如何提出问题\n" +
-                        "Answer: 如何回答问题\n");
+                        "Answer: 如何回答问题");
             }
         }
-        else if(content.toLowerCase().startsWith("wiki:")){
-            Util.sendMes(event,"未知指令或该指令不能在当前上下文中执行，回复Wiki:Help获取帮助。");
-            return null;
+        else if(content.toLowerCase().startsWith("about")){
+            Util.sendMes(event,"Wiki版本"+Util.VERSION+"\n最新版:"+Util.version.contains(Util.version)+"\nGithub项目地址:https://github.com/Under-estimate/Mirai-wiki\n(距离v1.0.0还有∞天)");
         }
         return null;
     }
@@ -459,6 +481,7 @@ public class Session {
         My_Questions,
         My_Answers,
         View_Unsolved,
+        View_All,
         Write_Answer,
         Null
     }

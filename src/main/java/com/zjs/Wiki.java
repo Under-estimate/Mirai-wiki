@@ -88,7 +88,7 @@ class Wiki extends PluginBase {
                 if(groupMessageEvent.getGroup().getId()==temp.getAsLong())
                     return;
             }
-            if(groupMessageEvent.getMessage().contentToString().toLowerCase().startsWith("wiki:")) {
+            if(groupMessageEvent.getMessage().contentToString().toLowerCase().startsWith("wiki ")) {
                 if(!looper.queue.isEmpty())
                     Util.sendMes(groupMessageEvent,"你的请求正在排队。前方有"+looper.queue.size()+"个请求。");
                 looper.post(groupMessageEvent);
@@ -104,7 +104,7 @@ class Wiki extends PluginBase {
                 }
                 if (!match) {
                     provider.cancelAllMatching(groupMessageEvent.getGroup().getId());
-                    if (!(Util.containsAny(content, "没什么") && Util.matchesAny(content, "?", "？")) &&
+                    if (!(Util.containsAny(content, "没什么") && ! Util.matchesAny(content, "?", "？")) &&
                             Util.containsAny(content, "?", "？", "吗", "呢", "怎么", "如何", "什么")) {
                         provider.post(new NotificationService(120 * 1000, groupMessageEvent));
                     }
@@ -114,7 +114,7 @@ class Wiki extends PluginBase {
         join=getEventListener().subscribeAlways(MemberJoinEvent.class,event->{
             if((boolean)Util.config.getAs(Config.JOIN_NOTIFICATION))
                 event.getGroup().sendMessage(new At(event.getMember()).plus("欢迎进群~\r\n\r\n" +
-                        "本群问答系统已上线，回复Wiki:Help获取使用帮助。"));});
+                        "本群问答系统已上线，回复Wiki Help获取使用帮助。"));});
         JCommandManager.getInstance().register(this, new BlockingCommand("wiki", new ArrayList<>(),"All wiki commands.","/wiki reloadConfig - 重载配置文件。") {
             @Override
             public boolean onCommandBlocking(@NotNull CommandSender commandSender, @NotNull List<String> list) {

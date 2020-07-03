@@ -18,7 +18,8 @@ import java.util.*;
 public class Util {
     public static final File questionsLocation=new File("plugins\\Wiki\\questions.bin");
     public static final File configLocation=new File("plugins\\Wiki\\config.json");
-    public static String version="Wiki-0.1.2-build20070212.jar";
+    public static String version="Wiki-0.1.3-build20070314.jar";
+    public static final String VERSION=version.substring(0,version.length()-4);
     public static URL updateInquireUrl;
     public static URL updateDownloadUrl;
     public static MiraiLogger logger;
@@ -29,26 +30,28 @@ public class Util {
     public static Config config;
     public static final String help_1=
             "任何情况下都能够使用的指令\n\n" +
-            "Wiki:Search + <关键词> 搜索有关问题\n" +
-            "Wiki:Question (+ <标题>) 提出问题\n" +
-            "Wiki:MyQuestion 查看自己提出的问题\n" +
-            "Wiki:MyAnswer 查看自己回答过的问题\n" +
-            "Wiki:Unsolved 查看本群中未解决的问题\n" +
-            "Wiki:Help (+ <主题>) 显示帮助";
+            "Wiki Search <关键词> 搜索有关问题\n" +
+            "Wiki All 显示本群所有问题\n" +
+            "Wiki Question (标题) 提出问题\n" +
+            "Wiki MyQuestion 查看自己提出的问题\n" +
+            "Wiki MyAnswer 查看自己回答过的问题\n" +
+            "Wiki Unresolved 查看本群中未解决的问题\n" +
+            "Wiki About 查看Wiki插件的相关信息\n" +
+            "Wiki Help (主题) 显示帮助";
     public static final String help_2=
             "在一定上下文中能够使用的指令\n\n" +
-                    "Wiki:Page + <页码> 跳转到指定页\n" +
-                    "Wiki:View + <序号> 查看指定的问题及回答\n" +
-                    "Wiki:Back 退出当前查看的问题(回到问题列表)\n" +
-                    "Wiki:Answer + <序号> 为指定的问题写回答\n" +
-                    "Wiki:Title + <标题> 为问题设置标题\n" +
-                    "Wiki:Text + <文本> 为问题/回答追加文本\n" +
-                    "Wiki:Image + [图片] 为问题/回答追加图片(不能是表情)\n" +
-                    "Wiki:Submit 提交问题/回答\n" +
-                    "Wiki:Abort 终止提出问题/写回答\n" +
-                    "Wiki:Delete 删除问题/回答\n" +
-                    "Wiki:Accept 接受回答并标记问题为\"解决\"\n" +
-                    "Wiki:Further 表示需要更多信息，将问题标记为\"追问\"";
+                    "Wiki Page <页码> 跳转到指定页\n" +
+                    "Wiki View <序号> 查看指定的问题及回答\n" +
+                    "Wiki Back 退出当前查看的问题(回到问题列表)\n" +
+                    "Wiki Answer <序号> 为指定的问题写回答\n" +
+                    "Wiki Title <标题> 为问题设置标题\n" +
+                    "Wiki Text <文本> 为问题/回答追加文本\n" +
+                    "Wiki Image [图片] 为问题/回答追加图片(不能是表情)\n" +
+                    "Wiki Submit 提交问题/回答\n" +
+                    "Wiki Abort 终止提出问题/写回答\n" +
+                    "Wiki Delete 删除问题/回答\n" +
+                    "Wiki Accept 接受回答并标记问题为\"解决\"\n" +
+                    "Wiki Further 表示需要更多信息，将问题标记为\"追问\"";
     /**
      * 保存问题数据，以便在下次启动时加载.
      * */
@@ -174,11 +177,11 @@ public class Util {
         }
         g.setColor(Color.cyan);
         g.drawString("共有"+searchResult.size()+"个条目，当前为第"+page+"页。",10,height-300);
-        g.drawString("回复\"Wiki:View <序号>\"来查看详细信息。",10,height-250);
-        g.drawString("回复\"Wiki:Help\"获取使用帮助",10,height-200);
+        g.drawString("回复\"Wiki View <序号>\"来查看详细信息。",10,height-250);
+        g.drawString("回复\"Wiki Help\"获取使用帮助",10,height-200);
         g.setColor(Color.lightGray);
         g.setFont(new Font("Microsoft YaHei",Font.PLAIN,15));
-        g.drawString("Wiki v0.1.2 UI",10,height-100);
+        g.drawString("Wiki v0.1.3 UI",10,height-100);
         g.drawString("Developer e-mail: 1260717118@qq.com",10,height-70);
         g.drawString("~ Resolution for FAQs ~",10,height-50);
         return result;
@@ -193,7 +196,10 @@ public class Util {
         return generateResultImage(searchResult,page,"My Answers",user,"");
     }
     public static @NotNull BufferedImage generateUnsolvedImage(ArrayList<Question> searchResult, int page, String user){
-        return generateResultImage(searchResult,page,"Unsolved Questions",user,"");
+        return generateResultImage(searchResult,page,"Unresolved Questions",user,"");
+    }
+    public static @NotNull BufferedImage generateAllQuestionImage(ArrayList<Question> searchResult, int page, String user){
+        return generateResultImage(searchResult,page,"All Questions",user,"");
     }
     /**
      * 生成帮助图像.
