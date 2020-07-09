@@ -66,11 +66,11 @@ public class Session {
                 if(page==0){
                     message = new At(event.getSender()).plus(currentQuestion.toString());
                     for (SerializableImage image : currentQuestion.images)
-                        message=message.plus(event.getGroup().uploadImage(image.bi));
+                        message=message.plus(event.getGroup().uploadImage(image.getImage()));
                 }else{
                     message = new At(event.getSender()).plus(currentQuestion.answererList.get(page - 1).toString());
                     for (SerializableImage image : currentQuestion.answererList.get(page-1).images)
-                        message=message.plus(event.getGroup().uploadImage(image.bi));
+                        message=message.plus(event.getGroup().uploadImage(image.getImage()));
                 }
                 Util.sendMes(event,message);
             }else {
@@ -107,7 +107,7 @@ public class Session {
             viewDetail=true;
             MessageChain message=new At(event.getSender()).plus(currentQuestion.toString());
             for (SerializableImage image : currentQuestion.images)
-                message=message.plus(event.getGroup().uploadImage(image.bi));
+                message=message.plus(event.getGroup().uploadImage(image.getImage()));
             event.getGroup().sendMessage(message);
             return true;
         }
@@ -384,6 +384,11 @@ public class Session {
                         "回复\"Wiki Help Question\"获取相关帮助");
                 return s;
             }
+            if(temp[1].trim().equalsIgnoreCase("")){
+                Util.sendMes(event,"开始创建问题!\n" +
+                        "回复\"Wiki Help Question\"获取相关帮助");
+                return s;
+            }
             s.currentQuestion.title=temp[1];
             Util.sendMes(event,"开始创建标题为\""+temp[1]+"\"的问题!\n" +
                     "回复\"Wiki Help Question\"获取相关帮助");
@@ -469,6 +474,9 @@ public class Session {
         }
         else if(content.toLowerCase().startsWith("about")){
             Util.sendMes(event,"Wiki版本"+Util.VERSION+"\nGithub项目地址:https://github.com/Under-estimate/Mirai-wiki\n(距离v1.0.0还有∞天)");
+        }
+        else{
+            Util.sendMes(event,"未知命令，回复wiki help获取帮助。");
         }
         return null;
     }

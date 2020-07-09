@@ -11,7 +11,6 @@ import net.mamoe.mirai.event.Listener;
 import net.mamoe.mirai.event.events.MemberJoinEvent;
 import net.mamoe.mirai.message.GroupMessageEvent;
 import net.mamoe.mirai.message.data.At;
-import net.mamoe.mirai.utils.PlatformLogger;
 import net.mamoe.mirai.utils.SimpleLogger;
 import org.jetbrains.annotations.NotNull;
 
@@ -48,6 +47,9 @@ public class Wiki extends com.zjs.UpdatablePlugin{
             else
                 Util.logger.error("Data Folder创建失败。");
         }
+        if(!Util.externalResourceLocation.exists())
+            if (!Util.externalResourceLocation.mkdirs())
+                Util.logger.error("Failed to create external resource directory.");
 
         loadConfig();
         sessions=new HashMap<>();
@@ -123,15 +125,17 @@ public class Wiki extends com.zjs.UpdatablePlugin{
                 Util.questions = new HashMap<>();
             }
         }
-
+        if(!Util.imageLocation.exists())
+            if(!Util.imageLocation.mkdirs())
+                Util.logger.error("Failed to create image directory.");
         if(!System.getProperty("os.name").toLowerCase().contains("win"))
-            Util.logger.warning("Detected non-Windows runtime. Please install font \"Microsoft YaHei\" so that Chinese characters are rendered properly.");
+            Util.logger.warning("检测到正在非Windows系统上运行，请安装字体\"Microsoft YaHei\"以便汉字能够正常显示。");
         GraphicsEnvironment ge=GraphicsEnvironment.getLocalGraphicsEnvironment();
         Font[] f=ge.getAllFonts();
         for(Font temp:f){
             if(Util.matchesAny(temp.getName(),"微软雅黑","msyh","Microsoft YaHei"))return;
         }
-        Util.logger.error("Font \"Microsoft YaHei\" not found in your system! Chinese characters will not be displayed normally!");
+        Util.logger.error("没有找到字体\"Microsoft YaHei\"，汉字将不会被正确显示。");
     }
     @Override
     public void onDisable(){
@@ -155,7 +159,7 @@ public class Wiki extends com.zjs.UpdatablePlugin{
      * */
     private void loadConfig(){
         if(!Util.configLocation.exists()){
-            Util.logger.warning("Config file does not exist, creating one with default config...");
+            Util.logger.warning("配置文件不存在，正在创建默认配置文件...");
             Util.config=new Config();
             Util.config.save(Util.configLocation);
         }else{
@@ -169,17 +173,45 @@ public class Wiki extends com.zjs.UpdatablePlugin{
                 provider.stop();
             provider=null;
         }
-        try {
-            if(Util.config.getAs(Config.RESULT_BACKGROUND).equals("default"))
-                Util.bgImage = ImageIO.read(this.getClass().getResourceAsStream("/bg.jpeg"));
-            else
-                Util.bgImage=ImageIO.read(new File("plugins\\Wiki\\"+Util.config.getAs(Config.RESULT_BACKGROUND)));
-            if(Util.config.getAs(Config.HELP_BACKGROUND).equals("default"))
-                Util.helpImage = ImageIO.read(this.getClass().getResourceAsStream("/help.jpg"));
-            else
-                Util.helpImage=ImageIO.read(new File("plugins\\Wiki\\"+Util.config.getAs(Config.HELP_BACKGROUND)));
-        } catch (Exception e) {
-            Util.logger.error("Failed to load background image.",e);
+        if(Util.config.getAs(Config.RESULT_BACKGROUND).equals("default")) {
+            try {
+                File extBgImage=new File("plugins\\Wiki\\res\\bg.png");
+                if(extBgImage.exists())
+                    Util.bgImage=ImageIO.read(extBgImage);
+                else {
+                    Util.bgImage = ImageIO.read(this.getClass().getResourceAsStream("/bg.jpeg"));
+                    ImageIO.write(Util.bgImage,"png",extBgImage);
+                }
+            }catch (Exception e){
+                Util.logger.error("加载默认背景图片失败，请考虑重启mirai。",e);
+            }
+        }else {
+            File customBgImage=new File("plugins\\Wiki\\" + Util.config.getAs(Config.RESULT_BACKGROUND));
+            try {
+                Util.bgImage = ImageIO.read(customBgImage);
+            } catch (Exception e) {
+                Util.logger.error("加载自定义背景图片失败，请确认路径" +customBgImage.getAbsolutePath()+ "无误。", e);
+            }
+        }
+        if(Util.config.getAs(Config.HELP_BACKGROUND).equals("default")) {
+            try {
+                File extHelpImage = new File("plugins\\Wiki\\res\\help.png");
+                if (extHelpImage.exists())
+                    Util.helpImage = ImageIO.read(extHelpImage);
+                else {
+                    Util.helpImage = ImageIO.read(this.getClass().getResourceAsStream("/help.jpg"));
+                    ImageIO.write(Util.helpImage,"png",extHelpImage);
+                }
+            }catch (Exception e){
+                Util.logger.error("加载默认背景图片失败，请考虑重启mirai。",e);
+            }
+        }else {
+            File customHelpImage=new File("plugins\\Wiki\\" + Util.config.getAs(Config.HELP_BACKGROUND));
+            try{
+                Util.helpImage=ImageIO.read(customHelpImage);
+            }catch (Exception e){
+                Util.logger.error("加载自定义背景图片失败，请确认路径" +customHelpImage.getAbsolutePath()+ "无误。", e);
+            }
         }
         Util.generateHelpImage();
     }

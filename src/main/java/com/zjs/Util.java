@@ -19,7 +19,9 @@ public class Util {
     public static final File questionsLocation=new File("plugins\\Wiki\\questions.bin");
     public static final File configLocation=new File("plugins\\Wiki\\config.json");
     public static final File dataFolderLocation=new File("plugins\\Wiki");
-    public static final String VERSION="Wiki-0.2.0-build200700910";
+    public static final File imageLocation=new File("plugins\\Wiki\\images");
+    public static final File externalResourceLocation=new File("plugins\\Wiki\\res");
+    public static final String VERSION="Wiki-0.2.0-build200700920";
     public static MiraiLogger logger;
     public static HashMap<Long, ArrayList<Question>> questions;
     public static BufferedImage bgImage;
