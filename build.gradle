@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'Wiki'
-version = '0.1.3'
+version = '0.2.0'
 
 repositories {
     maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
@@ -21,6 +21,7 @@ dependencies {
     compileOnly 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
     compileOnly "net.mamoe:mirai-core:$miraiCoreVersion"
     compileOnly "net.mamoe:mirai-console:$miraiConsoleVersion"
+    implementation fileTree(dir: 'D:/Projects/Java/Mirai/Wiki-wrapper/build/libs', includes: ['*.jar'])
 
     testImplementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
     testImplementation "net.mamoe:mirai-core:$miraiCoreVersion"

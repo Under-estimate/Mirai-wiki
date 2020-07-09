@@ -468,7 +468,7 @@ public class Session {
             }
         }
         else if(content.toLowerCase().startsWith("about")){
-            Util.sendMes(event,"Wiki版本"+Util.VERSION+"\n最新版:"+Util.version.contains(Util.version)+"\nGithub项目地址:https://github.com/Under-estimate/Mirai-wiki\n(距离v1.0.0还有∞天)");
+            Util.sendMes(event,"Wiki版本"+Util.VERSION+"\nGithub项目地址:https://github.com/Under-estimate/Mirai-wiki\n(距离v1.0.0还有∞天)");
         }
         return null;
     }

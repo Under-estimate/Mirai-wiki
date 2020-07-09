@@ -2,81 +2,59 @@ package com.zjs;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import net.mamoe.mirai.console.MiraiConsole;
 import net.mamoe.mirai.console.command.BlockingCommand;
 import net.mamoe.mirai.console.command.Command;
 import net.mamoe.mirai.console.command.CommandSender;
 import net.mamoe.mirai.console.command.JCommandManager;
-import net.mamoe.mirai.console.plugins.PluginBase;
 import net.mamoe.mirai.event.Listener;
 import net.mamoe.mirai.event.events.MemberJoinEvent;
 import net.mamoe.mirai.message.GroupMessageEvent;
 import net.mamoe.mirai.message.data.At;
+import net.mamoe.mirai.utils.PlatformLogger;
+import net.mamoe.mirai.utils.SimpleLogger;
 import org.jetbrains.annotations.NotNull;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.io.*;
 import java.util.List;
 import java.util.*;
 
-class Wiki extends PluginBase {
+public class Wiki extends com.zjs.UpdatablePlugin{
     HashMap<Long, ArrayList<Session>> sessions;
-    Listener<GroupMessageEvent> listener;
-    Listener<MemberJoinEvent> join;
+    Listener<GroupMessageEvent> listener=null;
+    Listener<MemberJoinEvent> join=null;
     Looper looper;
     Thread looperThread;
-    Timer autoUpdateTimer;
     NotificationServiceProvider provider=null;
     @Override
-    public void onLoad(){
-        getLogger().info("Wiki is being loaded.");
-    }
-    @Override
     public void onEnable(){
-        getLogger().info("Wiki is being enabled.");
-        Util.logger=getLogger();
+        Util.logger=new SimpleLogger("Plugin Wiki",(logPriority, s, throwable) -> {
+            MiraiConsole.frontEnd.pushLog(logPriority,"[Wiki]",0,s);
+            if(throwable!=null) {
+                ByteArrayOutputStream bos=new ByteArrayOutputStream();
+                throwable.printStackTrace(new PrintStream(bos));
+                MiraiConsole.frontEnd.pushLog(logPriority, "[Wiki]",0, new String(bos.toByteArray()));
+            }
+            return null;
+        });
+        Util.logger.info("Wiki is being enabled.");
+
+        if(!Util.dataFolderLocation.exists()) {
+            Util.logger.warning("Data Folder不存在，正在创建...");
+            if(Util.dataFolderLocation.mkdirs())
+                Util.logger.info("Data Folder创建成功。");
+            else
+                Util.logger.error("Data Folder创建失败。");
+        }
+
         loadConfig();
         sessions=new HashMap<>();
         looper=new Looper();
         looperThread=new Thread(looper);
         looperThread.start();
-        try{
-            Util.updateInquireUrl=new URL("http://20bf488.nat123.cc:25547/update?app=wiki");
-            Util.updateDownloadUrl=new URL("http://20bf488.nat123.cc:25547/download?app=wiki");
-        }catch (Exception e){
-            getLogger().error(e);
-        }
-        autoUpdateTimer=new Timer();
-        autoUpdateTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                try{
-                    getLogger().info("检查更新...");
-                    HttpURLConnection conn=(HttpURLConnection) Util.updateInquireUrl.openConnection();
-                    conn.connect();
-                    String result=new String(Util.streamToByteArray(conn.getInputStream()));
-                    if(result.equalsIgnoreCase(Util.version)){
-                        getLogger().info("Wiki已为最新!");
-                        return;
-                    }
-                    conn=(HttpURLConnection) Util.updateDownloadUrl.openConnection();
-                    byte[] jar=Util.streamToByteArray(conn.getInputStream());
-                    FileOutputStream fos=new FileOutputStream("plugins\\"+result+".disabled");
-                    fos.write(jar);
-                    fos.flush();
-                    fos.close();
-                    Util.version=result;
-                    getLogger().warning("检测到有新版本的Wiki，已下载至plugins文件夹下，请删除旧版Wiki并将最新版Wiki的.disabled后缀名删除，并重启Mirai。");
-                }catch (Exception e){
-                    getLogger().error("Failed to check update.",e);
-                }
-            }
-        },0,10*60*1000);
+
         loadData();
         Util.generateHelpImage();
         listener=getEventListener().subscribeAlways(GroupMessageEvent.class, groupMessageEvent -> {
@@ -141,24 +119,28 @@ class Wiki extends PluginBase {
                 Util.questions = (HashMap<Long, ArrayList<Question>>) ois.readObject();
                 Util.questionIdPointer = (int) ois.readObject();
             } catch (Exception e) {
-                getLogger().error("Data corrupted.", e);
+                Util.logger.error("Data corrupted.", e);
                 Util.questions = new HashMap<>();
             }
         }
 
         if(!System.getProperty("os.name").toLowerCase().contains("win"))
-            getLogger().warning("Detected non-Windows runtime. Please install font \"Microsoft YaHei\" so that Chinese characters are rendered properly.");
+            Util.logger.warning("Detected non-Windows runtime. Please install font \"Microsoft YaHei\" so that Chinese characters are rendered properly.");
         GraphicsEnvironment ge=GraphicsEnvironment.getLocalGraphicsEnvironment();
         Font[] f=ge.getAllFonts();
         for(Font temp:f){
             if(Util.matchesAny(temp.getName(),"微软雅黑","msyh","Microsoft YaHei"))return;
         }
-        getLogger().error("Font \"Microsoft YaHei\" not found in your system! Chinese characters will not be displayed normally!");
+        Util.logger.error("Font \"Microsoft YaHei\" not found in your system! Chinese characters will not be displayed normally!");
     }
     @Override
     public void onDisable(){
         looper.stop();
         provider.stop();
+        listener.complete();
+        if(join!=null)
+            join.complete();
+        JCommandManager.getInstance().unregister("wiki");
     }
     @Override
     public void onCommand(@NotNull Command command, @NotNull CommandSender sender, @NotNull List<String> args){
@@ -173,7 +155,7 @@ class Wiki extends PluginBase {
      * */
     private void loadConfig(){
         if(!Util.configLocation.exists()){
-            getLogger().warning("Config file does not exist, creating one with default config...");
+            Util.logger.warning("Config file does not exist, creating one with default config...");
             Util.config=new Config();
             Util.config.save(Util.configLocation);
         }else{
@@ -197,9 +179,13 @@ class Wiki extends PluginBase {
             else
                 Util.helpImage=ImageIO.read(new File("plugins\\Wiki\\"+Util.config.getAs(Config.HELP_BACKGROUND)));
         } catch (Exception e) {
-            getLogger().error("Failed to load background image.",e);
+            Util.logger.error("Failed to load background image.",e);
         }
         Util.generateHelpImage();
+    }
+    @Override
+    public String getVersion(){
+        return Util.VERSION;
     }
     /**
      * 循环处理正在排队的请求.
@@ -272,13 +258,13 @@ class Wiki extends PluginBase {
          * @param event 含有命令的群消息事件.
          * */
         public void post(GroupMessageEvent event){
-            getLogger().info("请求已加入队列。");
+            Util.logger.info("请求已加入队列。");
             queue.add(event);
             synchronized (lock){
                 lock.notify();
             }
             if(looperThread.getState()== Thread.State.TERMINATED) {
-                getLogger().error("Looper线程意外终止。尝试重启looper...");
+                Util.logger.error("Looper线程意外终止。尝试重启looper...");
                 looperThread=new Thread(this);
                 looperThread.start();
             }

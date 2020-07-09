@@ -18,10 +18,8 @@ import java.util.*;
 public class Util {
     public static final File questionsLocation=new File("plugins\\Wiki\\questions.bin");
     public static final File configLocation=new File("plugins\\Wiki\\config.json");
-    public static String version="Wiki-0.1.3-build20070314.jar";
-    public static final String VERSION=version.substring(0,version.length()-4);
-    public static URL updateInquireUrl;
-    public static URL updateDownloadUrl;
+    public static final File dataFolderLocation=new File("plugins\\Wiki");
+    public static final String VERSION="Wiki-0.2.0-build200700910";
     public static MiraiLogger logger;
     public static HashMap<Long, ArrayList<Question>> questions;
     public static BufferedImage bgImage;
