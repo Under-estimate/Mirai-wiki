@@ -21,7 +21,7 @@ public class Util {
     public static final File dataFolderLocation=new File("plugins\\Wiki");
     public static final File imageLocation=new File("plugins\\Wiki\\images");
     public static final File externalResourceLocation=new File("plugins\\Wiki\\res");
-    public static final String VERSION="Wiki-0.2.0-build200700920";
+    public static final String VERSION="Wiki-1.0.0";
     public static MiraiLogger logger;
     public static HashMap<Long, ArrayList<Question>> questions;
     public static BufferedImage bgImage;
@@ -181,7 +181,7 @@ public class Util {
         g.drawString("回复\"Wiki Help\"获取使用帮助",10,height-200);
         g.setColor(Color.lightGray);
         g.setFont(new Font("Microsoft YaHei",Font.PLAIN,15));
-        g.drawString("Wiki v0.1.3 UI",10,height-100);
+        g.drawString("Wiki v1.0.0 UI",10,height-100);
         g.drawString("Developer e-mail: 1260717118@qq.com",10,height-70);
         g.drawString("~ Resolution for FAQs ~",10,height-50);
         return result;

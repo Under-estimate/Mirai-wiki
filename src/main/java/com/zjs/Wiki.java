@@ -3,10 +3,7 @@ package com.zjs;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import net.mamoe.mirai.console.MiraiConsole;
-import net.mamoe.mirai.console.command.BlockingCommand;
-import net.mamoe.mirai.console.command.Command;
-import net.mamoe.mirai.console.command.CommandSender;
-import net.mamoe.mirai.console.command.JCommandManager;
+import net.mamoe.mirai.console.command.*;
 import net.mamoe.mirai.event.Listener;
 import net.mamoe.mirai.event.events.MemberJoinEvent;
 import net.mamoe.mirai.message.GroupMessageEvent;
@@ -15,6 +12,8 @@ import net.mamoe.mirai.utils.SimpleLogger;
 import org.jetbrains.annotations.NotNull;
 
 import javax.imageio.ImageIO;
+import javax.script.ScriptEngineFactory;
+import javax.script.ScriptEngineManager;
 import java.awt.*;
 import java.io.*;
 import java.util.List;
@@ -95,14 +94,20 @@ public class Wiki extends com.zjs.UpdatablePlugin{
             if((boolean)Util.config.getAs(Config.JOIN_NOTIFICATION))
                 event.getGroup().sendMessage(new At(event.getMember()).plus("欢迎进群~\r\n\r\n" +
                         "本群问答系统已上线，回复Wiki Help获取使用帮助。"));});
-        JCommandManager.getInstance().register(this, new BlockingCommand("wiki", new ArrayList<>(),"All wiki commands.","/wiki reloadConfig - 重载配置文件。") {
+        JCommandManager.getInstance().register(this, new BlockingCommand("wiki", new ArrayList<>(),"All wiki commands.",
+                "命令用法:\n" +
+                "/wiki reloadConfig 重载配置文件\n" +
+                "/wiki gb [add/del] [<群ID>/this] 添加或删除群组黑名单\n" +
+                "/wiki mb [add/del] <用户ID> 添加或删除用户黑名单\n" +
+                "/wiki join [true/false] 启用或禁用加群提醒\n" +
+                "/wiki question [true/false] 启用或禁用关键词提醒") {
             @Override
             public boolean onCommandBlocking(@NotNull CommandSender commandSender, @NotNull List<String> list) {
                 if(list.size()<1){
                     commandSender.sendMessageBlocking("缺少参数。");
                     return false;
                 }
-                return list.get(0).equalsIgnoreCase("reloadConfig");
+                return true;
             }
         });
     }
@@ -152,6 +157,96 @@ public class Wiki extends com.zjs.UpdatablePlugin{
             sender.sendMessageBlocking("重载配置文件...");
             loadConfig();
             sender.sendMessageBlocking("重载完成!");
+        }else if(args.get(0).equalsIgnoreCase("gb")){
+            if(args.size()!=3) {
+                sender.sendMessageBlocking("参数错误。用法: /wiki gb [add/del] [<群ID>/this]");
+                return;
+            }
+            if(!Util.matchesAny(args.get(1),"add","del")) {
+                sender.sendMessageBlocking("参数错误。用法: /wiki gb [add/del] [<群ID>/this]");
+                return;
+            }
+            long groupID=-1;
+            if(args.get(2).equalsIgnoreCase("this")){
+                if(sender instanceof ConsoleCommandSender){
+                    sender.sendMessageBlocking("你不能在控制台中使用this参数!");
+                    return;
+                }else if(sender instanceof GroupContactCommandSender){
+                    groupID=((GroupContactCommandSender)sender).getRealSender().getGroup().getId();
+                }
+            }else{
+                try{
+                    groupID=Long.parseLong(args.get(2));
+                }catch (Exception e){
+                    sender.sendMessageBlocking("群ID格式不正确!");
+                    return;
+                }
+            }
+            if(args.get(1).equalsIgnoreCase("add")){
+                try {
+                    ((JsonArray)(Util.config.getAs(Config.GROUP_BLACKLIST))).add(groupID);
+                    sender.sendMessageBlocking("添加成功");
+                }catch (Exception e){
+                    sender.sendMessageBlocking("添加失败");
+                    Util.logger.error(e);
+                }
+            }else{
+                Iterator<JsonElement> it=((JsonArray)(Util.config.getAs(Config.GROUP_BLACKLIST))).iterator();
+                for(int i=0;it.hasNext();i++){
+                    if(it.next().getAsLong()==groupID){
+                        it.remove();
+                        sender.sendMessageBlocking("删除成功");
+                        return;
+                    }
+                }
+                sender.sendMessageBlocking("群组不在黑名单中。");
+            }
+        }else if(args.get(0).equalsIgnoreCase("mb")){
+            if(args.size()!=3) {
+                sender.sendMessageBlocking("参数错误。用法: /wiki mb [add/del] <用户ID>");
+                return;
+            }
+            if(!Util.matchesAny(args.get(1),"add","del")) {
+                sender.sendMessageBlocking("参数错误。用法: /wiki mb [add/del] <用户ID>");
+                return;
+            }
+            long userId;
+            try{
+                userId=Long.parseLong(args.get(2));
+            }catch (Exception e){
+                sender.sendMessageBlocking("用户ID格式不正确!");
+                return;
+            }
+            if(args.get(1).equalsIgnoreCase("add")){
+                try {
+                    ((JsonArray)(Util.config.getAs(Config.MEMBER_BLACKLIST))).add(userId);
+                    sender.sendMessageBlocking("添加成功");
+                }catch (Exception e){
+                    sender.sendMessageBlocking("添加失败");
+                    Util.logger.error(e);
+                }
+            }else{
+                Iterator<JsonElement> it=((JsonArray)(Util.config.getAs(Config.MEMBER_BLACKLIST))).iterator();
+                for(int i=0;it.hasNext();i++){
+                    if(it.next().getAsLong()==userId){
+                        it.remove();
+                        sender.sendMessageBlocking("删除成功");
+                        return;
+                    }
+                }
+                sender.sendMessageBlocking("用户不在黑名单中。");
+            }
+        }else if(Util.matchesAny(args.get(0),"join","question")){
+            boolean isJoin=args.get(0).equalsIgnoreCase("join");
+            if(args.size()!=2) {
+                sender.sendMessageBlocking("参数错误。用法: /wiki "+(isJoin?"join":"question")+" [true/false]");
+                return;
+            }
+            if(!Util.matchesAny(args.get(1),"true","false")) {
+                sender.sendMessageBlocking("参数错误。用法: /wiki "+(isJoin?"join":"question")+" [true/false]");
+                return;
+            }
+            Util.config.data.addProperty(isJoin?Config.JOIN_NOTIFICATION:Config.QUESTION_NOTIFICATION,args.get(1).equalsIgnoreCase("true"));
         }
     }
     /**
