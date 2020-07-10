@@ -37,7 +37,11 @@ Wiki Delete 删除问题/回答
 Wiki Accept 接受回答并标记问题为"解决"  
 Wiki Further 表示需要更多信息，将问题标记为"追问"  
 ### 管理员(manager)指令
-/wiki reloadConfig 在无需重启mirai的情况下重载配置文件。
+/wiki reloadConfig 重载配置文件  
+/wiki gb [add/del] [<群ID>/this] 添加或删除群组黑名单  
+/wiki mb [add/del] <用户ID> 添加或删除用户黑名单  
+/wiki join [true/false] 启用或禁用加群提醒  
+/wiki question [true/false] 启用或禁用关键词提醒
 
 ## 获取插件jar文件
 请下载[Wiki-wrapper](http://20bf488.nat123.cc:25547/download?app=wikiwrapper) ，将其放入plugins文件夹中，然后启动mirai，Wiki将会自动被下载安装。
