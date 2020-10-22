@@ -2,16 +2,18 @@
 基于[mirai](https://github.com/mamoe/mirai)的QQ群内问答系统插件  
 Mirai Core 版本 `1.0-RC2-1`~`1.1.0`  
 Mirai Console 版本 `0.5.2`  
-**注意: 暂不支持 Mirai Console `1.0-dev-1` 版本，因为它还不是一个稳定的版本。你可以尝试更改旧版本console的文件名中的版本号来避免版本更新。**
+**注意: 暂不支持 Mirai Console `1.0-dev-1` 版本，因为它还不是一个稳定的版本。你可以尝试更改旧版本console的文件名中的版本号来避免版本更新。**  
+**由于服务器到期，自动更新和Wiki-wrapper暂不可用。**
 
 ## 使用方法
-将[Wiki-wrapper](http://20bf488.nat123.cc:25547/download?app=wikiwrapper) 放入plugins文件夹中即可使用。
+编译为jar之后，放入plugins文件夹中即可使用。
+~~将[Wiki-wrapper](http://20bf488.nat123.cc:25547/download?app=wikiwrapper) 放入plugins文件夹中即可使用。~~
 
 > 关于Linux运行环境  
 > 如果你正在使用Linux而不是Windows来运行Mirai,请确保Microsoft YaHei字体(msyh.ttc)已安装到你的系统中，否则汉字可能不会被正常显示。  
   
-> 关于自动更新  
-> 当版本更新时，Wiki-wrapper会自动下载安装最新版本。更新方式为热更新，无需重启mirai。
+> ~~关于自动更新  
+> 当版本更新时，Wiki-wrapper会自动下载安装最新版本。更新方式为热更新，无需重启mirai。~~
 
 ## 命令列表
 ### 任何情况下都能够使用的指令
@@ -44,4 +46,4 @@ Wiki Further 表示需要更多信息，将问题标记为"追问"
 /wiki question [true/false] 启用或禁用关键词提醒
 
 ## 获取插件jar文件
-请下载[Wiki-wrapper](http://20bf488.nat123.cc:25547/download?app=wikiwrapper) ，将其放入plugins文件夹中，然后启动mirai，Wiki将会自动被下载安装。
+~~请下载[Wiki-wrapper](http://20bf488.nat123.cc:25547/download?app=wikiwrapper) ，将其放入plugins文件夹中，然后启动mirai，Wiki将会自动被下载安装。~~
