@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 public final class Wiki extends JavaPlugin {
     public static final Wiki INSTANCE=new Wiki();
     private Wiki(){
-        super(new JvmPluginDescriptionBuilder("org.zrnq.wiki","2.0.0")
+        super(new JvmPluginDescriptionBuilder("org.zrnq.wiki",R.version)
                 .author("ZRnQ")
                 .name(R.name)
                 .info("QQ群内问答系统")

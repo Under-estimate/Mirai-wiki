@@ -8,7 +8,7 @@ import java.util.HashMap;
 
 public class R {
     public static final String name="MiraiWiki";
-    public static final String version ="2.0.0";
+    public static final String version ="2.0.1";
     public static MiraiLogger logger;
     public static final HashMap<Long,HashMap<Long,Session>> sessions=new HashMap<>();
     public static final Font F = new Font("Microsoft YaHei",Font.PLAIN,30);

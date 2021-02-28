@@ -22,7 +22,7 @@ public class Question implements Serializable {
     }
     public String getStatusBarText(){
         return "提问者: "+questioner.name
-                +"  提问时间: "+ Util.parseTime(time)
+                +"  时间: "+ Util.parseTime(time)
                 +"  回答数: "+answererList.size()
                 +"  状态: "+(haveAccepted()?"解决":
                 answererList.size()<=0?"等待":

@@ -223,7 +223,7 @@ public class Util {
 
             g.setColor(R.skyBlue);
             doDraw(g,tmp=it.next(),textMargin,yPos);
-            doDraw(g,"A"+i,getAvatarOf(question.groupId,question.questioner.id),avatarMargin,yPos,avatarSize);
+            doDraw(g,"A"+i,getAvatarOf(question.groupId,answer.id),avatarMargin,yPos,avatarSize);
             yPos += tmp.height;
             yPos += 5;
 
@@ -318,6 +318,8 @@ public class Util {
     public static RenderedText preCalculate(Graphics2D g, String text, int w){
         RenderedText rendered = new RenderedText();
         FontMetrics fm=g.getFontMetrics();
+        //Preventing characters overflow
+        w -= fm.charWidth('啊');
         int lineCount = 1;
         int lastDraw=0;
         rendered.linebreaks.add(0);
