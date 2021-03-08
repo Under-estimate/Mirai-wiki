@@ -15,7 +15,7 @@
 4. 启动[mirai-console](https://github.com/mamoe/mirai-console )之后，在后台命令行输入以下命令授予相关用户使用此插件命令的权限：
 > - 如果您希望所有群的群员都可以使用此插件，请输入：  
 > `/perm grant m* org.zrnq.wiki:*`  
-> - 如果您希望只授予某一个群的群员使用此插件的权限，请输入：
+> - 如果您希望只授予某一个群的群员使用此插件的权限，请输入：  
 > `/perm grant m<QQ群号>.* org.zrnq.wiki:*`
 > - 如果您希望只授予某一个群的特定群员使用此插件的权限，请输入：  
 > `/perm grant m<QQ群号>.<群员QQ号> org.zrnq.wiki:*`
@@ -54,4 +54,4 @@ wiki further 将刚刚查看过详细信息的问题标记为"追问"
 ### Q: 后台命令行或私聊机器人输入指令后提示"参数错误"
 A: 目前只支持在QQ群中发送命令，因为每次提问/回答需要记录执行该操作的用户。提示参数错误是因为插件限制了命令执行者只能为QQ群成员。
 ### Q: 在QQ群中发送命令没反应
-A: 请检查是否安装了[chat-command](https://github.com/project-mirai/chat-command )插件，如果没有安装请看[这里](#如何使用 )
+A: 请检查是否安装了[chat-command](https://github.com/project-mirai/chat-command )插件，如果没有安装请看[这里](#如何安装 )
