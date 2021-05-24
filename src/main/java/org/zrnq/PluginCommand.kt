@@ -10,6 +10,7 @@ import java.lang.IllegalStateException
 import java.lang.UnsupportedOperationException
 import kotlin.reflect.KProperty
 
+@Suppress("RedundantSuspendModifier")
 object PluginCommand : CompositeCommand(
     Wiki.INSTANCE,"wiki",
     description = "MiraiWiki相关指令"){
