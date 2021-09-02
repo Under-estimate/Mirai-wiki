@@ -1,5 +1,6 @@
 package org.zrnq;
 
+import kotlinx.io.streams.ByteArraysKt;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
@@ -263,7 +264,17 @@ public class Util {
     public static void sendMes(@NotNull GroupMessageEvent event, String message){
         sendMes(event,new PlainText(message));
     }
-    public static void sendMes(@NotNull GroupMessageEvent event, ExternalResource resource){
+    public static void sendMes(@NotNull GroupMessageEvent event, byte[] image){
+        ExternalResource resource = ExternalResource.create(image, "png");
+        sendMes(event,event.getGroup().uploadImage(resource));
+        try {
+            resource.close();
+        } catch (IOException e) {
+            R.logger.error("关闭ExternalResource失败",e);
+        }
+    }
+    public static void sendMes(@NotNull GroupMessageEvent event, File image){
+        ExternalResource resource = ExternalResource.create(image, "png");
         sendMes(event,event.getGroup().uploadImage(resource));
         try {
             resource.close();

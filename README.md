@@ -1,5 +1,5 @@
 # Mirai-wiki
-[![mirai](https://img.shields.io/badge/mirai-v2.4.2-brightgreen)](https://github.com/mamoe/mirai )  
+[![mirai](https://img.shields.io/badge/mirai-v2.7.0-brightgreen)](https://github.com/mamoe/mirai )  
 基于[mirai](https://github.com/mamoe/mirai )的QQ群内问答系统插件  
 
 > 关于Linux运行环境  

@@ -1,18 +1,2 @@
-pluginManagement {
-    resolutionStrategy {
-        eachPlugin {
-            switch (requested.id.id) {
-                case "com.github.johnrengelman.shadow": useModule("com.github.jengelman.gradle.plugins:shadow:${requested.version}"); break
-                case "org.jetbrains.kotlin.jvm": useModule("org.jetbrains.kotlin:kotlin-gradle-plugin:${requested.version}")
-            }
-        }
-    }
-
-    repositories {
-        maven { url 'https://mirrors.huaweicloud.com/repository/maven' }
-        mavenCentral()
-    }
-}
-
 rootProject.name = 'Wiki'
 

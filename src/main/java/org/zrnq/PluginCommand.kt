@@ -5,7 +5,6 @@ import net.mamoe.mirai.console.command.MemberCommandSenderOnMessage
 import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
-import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import java.lang.IllegalStateException
 import java.lang.UnsupportedOperationException
 import kotlin.reflect.KProperty
@@ -16,7 +15,7 @@ object PluginCommand : CompositeCommand(
     description = "MiraiWiki相关指令"){
     private var MemberCommandSenderOnMessage.session by SessionDelegate()
     private fun MemberCommandSenderOnMessage.disposeSession(){
-        R.sessions[group.id]!!.remove(user.id)
+        R.sessions[group.id]?.remove(user.id)
     }
     private fun Session.State.toStateString() : String{
         return when(this){
@@ -72,7 +71,7 @@ object PluginCommand : CompositeCommand(
         val image = Util.generateResultImage(session.queryData,0,
             "搜索结果",
             "关键词: $keyword",
-            "用户: ${user.nameCardOrNick}").toExternalResource("png")
+            "用户: ${user.nameCardOrNick}")
         Util.sendMes(fromEvent,image)
     }
     @SubCommand
@@ -97,7 +96,7 @@ object PluginCommand : CompositeCommand(
         val image = Util.generateResultImage(session.queryData, 0,
             "我提出的问题",
             "用户: ${user.nameCardOrNick}",
-            "").toExternalResource("png")
+            "")
         Util.sendMes(fromEvent,image)
     }
     @SubCommand
@@ -113,7 +112,7 @@ object PluginCommand : CompositeCommand(
         val image = Util.generateResultImage(session.queryData,0,
             "我回答过的问题",
             "用户: ${user.nameCardOrNick}",
-            "").toExternalResource("png")
+            "")
         Util.sendMes(fromEvent,image)
     }
     @SubCommand
@@ -129,7 +128,7 @@ object PluginCommand : CompositeCommand(
         val image = Util.generateResultImage(session.queryData,0,
             "本群未解决的问题",
             "用户: ${user.nameCardOrNick}",
-            "").toExternalResource("png")
+            "")
         Util.sendMes(fromEvent,image)
     }
     @SubCommand
@@ -146,7 +145,7 @@ object PluginCommand : CompositeCommand(
         val image = Util.generateResultImage(session.queryData,0,
             "本群所有问题",
             "用户: ${user.nameCardOrNick}",
-            "").toExternalResource("png")
+            "")
         Util.sendMes(fromEvent,image)
     }
     @SubCommand
@@ -167,11 +166,11 @@ object PluginCommand : CompositeCommand(
             return
         }
         val image = when(session.state){
-            Session.State.Search_Question -> Util.generateResultImage(session.queryData,page,"搜索结果","关键词: ${session.text}","用户: ${user.nameCardOrNick}").toExternalResource("png")
-            Session.State.My_Questions -> Util.generateResultImage(session.queryData,page,"我提出的问题","用户: ${user.nameCardOrNick}","").toExternalResource("png")
-            Session.State.My_Answers -> Util.generateResultImage(session.queryData,page,"我回答过的问题","用户: ${user.nameCardOrNick}","").toExternalResource("png")
-            Session.State.View_Unsolved -> Util.generateResultImage(session.queryData,page,"本群未解决的问题","用户: ${user.nameCardOrNick}","").toExternalResource("png")
-            Session.State.View_All ->  Util.generateResultImage(session.queryData,page,"本群所有问题","用户: ${user.nameCardOrNick}","").toExternalResource("png")
+            Session.State.Search_Question -> Util.generateResultImage(session.queryData,page,"搜索结果","关键词: ${session.text}","用户: ${user.nameCardOrNick}")
+            Session.State.My_Questions -> Util.generateResultImage(session.queryData,page,"我提出的问题","用户: ${user.nameCardOrNick}","")
+            Session.State.My_Answers -> Util.generateResultImage(session.queryData,page,"我回答过的问题","用户: ${user.nameCardOrNick}","")
+            Session.State.View_Unsolved -> Util.generateResultImage(session.queryData,page,"本群未解决的问题","用户: ${user.nameCardOrNick}","")
+            Session.State.View_All ->  Util.generateResultImage(session.queryData,page,"本群所有问题","用户: ${user.nameCardOrNick}","")
             else -> throw IllegalStateException("An unexpected exception has occurred: Theoretically unreachable statement at command [page]")
         }
         Util.sendMes(fromEvent,image)
@@ -189,14 +188,17 @@ object PluginCommand : CompositeCommand(
         }
         session.currentQuestion = session.queryData[item]
         session.viewDetail = true
-        val image = Util.generateDetailImage(session.queryData[item]).toExternalResource("png")
+        val image = Util.generateDetailImage(session.queryData[item])
         Util.sendMes(fromEvent,image)
     }
     @SubCommand
     @Description("查看指定序号的图片")
     suspend fun MemberCommandSenderOnMessage.viewimage(imageId : Int){
-        val image = SerializableImage.getImage(imageId)?.toExternalResource("png")
-            ?: PluginImageHolder.INSTANCE.getByteArray("missing").toExternalResource("png")
+        val image = SerializableImage.getImage(imageId)
+        if(image == null) {
+            Util.sendMes(fromEvent, PluginImageHolder.INSTANCE.getByteArray("missing"))
+            return
+        }
         Util.sendMes(fromEvent,image)
     }
     @SubCommand
