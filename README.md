@@ -25,7 +25,10 @@
 *有关权限部分的说明，参见[mirai-console的权限文档](https://github.com/mamoe/mirai-console/blob/master/docs/Permissions.md )*  
 根权限： `org.zrnq.wiki:*`  
 基本操作权限： `org.zrnq.wiki:command.wiki`
-- 包含所有命令执行的权限。
+- 包含所有命令执行的权限。  
+
+管理员权限： `org.zrnq.wiki:admin`
+- 拥有管理员权限的用户可以删除其他人的问题/回答，标记问题为"解决"或"追问"
 ## 命令列表
 *提示: <尖括号>中的参数必填，(圆括号)中的参数可以不填*
 ### 任何情况下都能够使用的指令
