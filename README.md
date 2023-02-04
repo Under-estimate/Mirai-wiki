@@ -14,11 +14,11 @@
 > 2. 如果您没有使用[Mirai Console Loader](https://github.com/iTXTech/mirai-console-loader )，您可以在[这里](https://github.com/project-mirai/chat-command/releases )下载最新的[chat-command](https://github.com/project-mirai/chat-command )插件文件，并将其一同放入[mirai-console](https://github.com/mamoe/mirai-console )运行生成的`plugins`文件夹中。
 4. 启动[mirai-console](https://github.com/mamoe/mirai-console )之后，在后台命令行输入以下命令授予相关用户使用此插件命令的权限：
 > - 如果您希望所有群的群员都可以使用此插件，请输入：  
-> `/perm grant m* org.zrnq.wiki:*`  
+> `/perm grant m* org.zrnq.wiki:command.wiki`  
 > - 如果您希望只授予某一个群的群员使用此插件的权限，请输入：  
-> `/perm grant m<QQ群号>.* org.zrnq.wiki:*`
+> `/perm grant m<QQ群号>.* org.zrnq.wiki:command.wiki`
 > - 如果您希望只授予某一个群的特定群员使用此插件的权限，请输入：  
-> `/perm grant m<QQ群号>.<群员QQ号> org.zrnq.wiki:*`
+> `/perm grant m<QQ群号>.<群员QQ号> org.zrnq.wiki:command.wiki`
 > - 如果你希望了解更多高级权限设置方法，请参阅[mirai-console的权限文档](https://github.com/mamoe/mirai-console/blob/master/docs/Permissions.md )
 5. 安装完成。
 ## 权限列表
