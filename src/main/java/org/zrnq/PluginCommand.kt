@@ -2,6 +2,8 @@ package org.zrnq
 
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.MemberCommandSenderOnMessage
+import net.mamoe.mirai.console.permission.PermissionService.Companion.testPermission
+import net.mamoe.mirai.console.permission.PermitteeId.Companion.permitteeId
 import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
@@ -11,7 +13,7 @@ import kotlin.reflect.KProperty
 
 @Suppress("RedundantSuspendModifier")
 object PluginCommand : CompositeCommand(
-    Wiki.INSTANCE,"wiki",
+    Wiki,"wiki",
     description = "MiraiWiki相关指令"){
     private var MemberCommandSenderOnMessage.session by SessionDelegate()
     private fun MemberCommandSenderOnMessage.disposeSession(){
@@ -44,14 +46,14 @@ object PluginCommand : CompositeCommand(
         return checkApplicability(acceptTheseStates, *states)
     }
     private fun MemberCommandSenderOnMessage.checkPermission(question : Question) : Boolean{
-        if(question.questioner.id != user.id){
+        if(question.questioner.id != user.id && !Wiki.adminPerm.testPermission(user.permitteeId)){
             Util.sendMes(fromEvent, "你不能在${question.questioner.name}提出的问题中执行该操作")
             return false
         }
         return true
     }
     private fun MemberCommandSenderOnMessage.checkPermission(answer : Answer) : Boolean{
-        if(answer.id != user.id){
+        if(answer.id != user.id && !Wiki.adminPerm.testPermission(user.permitteeId)){
             Util.sendMes(fromEvent, "你不能对${answer.name}的回答执行该操作")
             return false
         }
@@ -321,9 +323,10 @@ object PluginCommand : CompositeCommand(
             list.remove(questionE)
         }
         disposeSession()
+        Util.sendMes(fromEvent, "删除问题成功")
     }
     @SubCommand
-    @Description("刚刚查看过的问题(只能是你自己的)")
+    @Description("删除刚刚查看过的问题(只能是你自己的)")
     suspend fun MemberCommandSenderOnMessage.deleteq(){
         if(!checkApplicability(false,true,
                 Session.State.Write_Answer,
@@ -336,6 +339,7 @@ object PluginCommand : CompositeCommand(
             list.remove(session.currentQuestion)
         }
         disposeSession()
+        Util.sendMes(fromEvent, "删除问题成功")
     }
     @SubCommand
     @Description("删除列表中指定问题下指定序号的回答(只能是你的回答)")
