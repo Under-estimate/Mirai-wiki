@@ -1,6 +1,5 @@
 package org.zrnq;
 
-import kotlinx.io.streams.ByteArraysKt;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
@@ -116,7 +115,7 @@ public class Util {
             g.drawString(Integer.toString(i),10,y);
             g.setColor(Color.white);
             g.drawString(limitString(temp.title,30),60,y);
-            g.setColor(temp.answererList.size()>0?Color.green:Color.red);
+            g.setColor(temp.answererList.isEmpty() ?Color.red:Color.green);
             g.drawString(Integer.toString(temp.answererList.size()),600,y);
             g.setColor(temp.haveAccepted()?Color.green:
                     temp.answererList.size()<=0?Color.cyan:
@@ -421,7 +420,7 @@ public class Util {
         }
     }
 
-    private static class RenderedText{
+    public static class RenderedText{
         int height;
         int lineHeight;
         int ascent;
